@@ -60,9 +60,22 @@ export function Btn({ variant = "secondary", size = "md", className, children, .
   );
 }
 
-export function Panel({ title, aside, children, className }: { title?: ReactNode; aside?: ReactNode; children: ReactNode; className?: string }) {
+export function Panel({
+  title,
+  aside,
+  children,
+  className,
+  tour,
+}: {
+  title?: ReactNode;
+  aside?: ReactNode;
+  children: ReactNode;
+  className?: string;
+  /** âncora do tour guiado */
+  tour?: string;
+}) {
   return (
-    <section className={cx("rounded-[14px] border border-[var(--ui-line)] bg-white", className)}>
+    <section data-tour={tour} className={cx("rounded-[14px] border border-[var(--ui-line)] bg-white", className)}>
       {(title || aside) && (
         <header className="flex items-center justify-between gap-3 border-b border-[var(--ui-line)] px-4 py-3">
           <h4 className="text-[13px] font-semibold text-[var(--ui-ink)]">{title}</h4>

@@ -89,6 +89,22 @@ export const EMPTY_RFQ: RFQ = {
   notes: "",
 };
 
+/** Exemplo usado pelo tour e pelo botão "Fill with example" (dados fictícios). */
+export const EXAMPLE_RFQ: RFQ = {
+  service: "tank-cleaning",
+  location: "Singapore",
+  vessel: "MT Example Star",
+  vesselType: "Product tanker",
+  windowStart: "2026-11-12",
+  windowEnd: "2026-11-15",
+  tankType: "Cargo tanks",
+  tankCount: "4",
+  cargoHistory: "Clean petroleum products (example)",
+  notes: "Tank plan attached. Pre-loading inspection standard expected.",
+};
+
+export const EXAMPLE_ATTACHMENT = { name: "tank-plan-example.pdf", size: 482_000, type: "application/pdf" };
+
 export function buildProposal(r: Pick<RFQ, "tankCount" | "tankType" | "vessel" | "location">, id: string) {
   const n = r.tankCount ? `${r.tankCount} ` : "";
   return {
@@ -198,6 +214,7 @@ export function initialSession(): DemoSession {
     partnerId: "sg-1",
     seq: 100,
     toast: null,
+    tour: { mode: "intro", step: 0 },
   };
 }
 

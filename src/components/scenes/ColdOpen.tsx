@@ -2,15 +2,16 @@
 
 import { useRef } from "react";
 import { gsap } from "@/lib/gsap";
+import { ASSETS, HERO_RIG } from "@/lib/assets";
 import { HeroCanvas } from "../motion/HeroCanvas";
 import { useScrollScene } from "../motion/useScrollScene";
 import { SplitWords } from "../ui/SplitWords";
 import { useLenis } from "../motion/SmoothScroll";
 
 const LINES = [
-  "A vessel needs tank cleaning.",
-  "The challenge is not just finding a supplier.",
-  "It's getting the job done.",
+  "Um navio em Singapura precisa de limpeza de tanques.",
+  "O desafio não é só encontrar um fornecedor.",
+  "É ter alguém que responda pelo resultado.",
 ];
 
 export function ColdOpen() {
@@ -83,12 +84,7 @@ export function ColdOpen() {
     <section ref={ref} id="request" data-header-theme="dark" className="scene bg-abyss" aria-label="00 · The request">
       <div className="pin-track" style={{ ["--track" as string]: 420 }}>
         <div className="pin-stage rm-flow">
-          <HeroCanvas
-            src="/media/hero-vessel-1920.webp"
-            fallbackSrc="/media/hero-vessel-1920.webp"
-            alt="Navio-tanque em mar aberto ao entardecer. Imagem conceitual."
-            progressRef={progressRef}
-          />
+          <HeroCanvas asset={ASSETS.heroVessel} rig={HERO_RIG} progressRef={progressRef} />
           <div className="absolute inset-0 scrim-b opacity-80" aria-hidden="true" />
 
           {/* HUD técnico: cenário identificado como ilustrativo */}
@@ -104,7 +100,7 @@ export function ColdOpen() {
 
           {/* sequência de frases */}
           <div className="wrap absolute inset-x-0 bottom-[16vh] md:bottom-[14vh] rm-static">
-            <div className="relative min-h-[2.2em] t-xl max-w-[16ch] md:max-w-[18ch]">
+            <div className="relative min-h-[2.2em] t-xl max-w-[15ch] md:max-w-[19ch]">
               {LINES.map((l, i) => (
                 <p key={l} data-line className={`${i === 0 ? "relative" : "absolute inset-x-0 bottom-0"} rm-static`}>
                   <SplitWords text={l} />
@@ -124,7 +120,7 @@ export function ColdOpen() {
                 From request to execution. <span className="text-paper">Beyond borders.</span>
               </p>
               <button data-reveal-sub type="button" onClick={explore} className="btn-ghost self-start md:self-auto">
-                Explore the concept
+                Explorar o conceito
                 <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
                   <path d="M7 2v10M3 8l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.3" />
                 </svg>
@@ -140,8 +136,6 @@ export function ColdOpen() {
               </span>
             </div>
           </div>
-
-          <p className="concept-tag absolute bottom-6 right-[var(--gutter)] hidden md:block">Imagem conceitual · styleframe 01</p>
         </div>
       </div>
     </section>

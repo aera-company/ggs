@@ -104,4 +104,11 @@ export interface DemoSession {
   partnerId: string;
   seq: number;
   toast: string | null;
+  tour: TourState;
+}
+
+/** Demonstração guiada: "intro" convida, "guided" conduz, "free" deixa explorar. */
+export interface TourState {
+  mode: "intro" | "guided" | "free";
+  step: number;
 }

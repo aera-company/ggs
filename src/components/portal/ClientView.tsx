@@ -111,17 +111,22 @@ function NewRequest() {
   };
 
   return (
-    <form ref={formRef} onSubmit={submit} noValidate className="grid gap-5">
+    <form ref={formRef} onSubmit={submit} noValidate className="grid gap-5 rounded-[14px]" data-tour="form">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h3 className="text-[20px] font-semibold tracking-[-0.01em] text-[var(--ui-ink)]">New service request</h3>
           <p className="mt-1 text-[13.5px] text-[var(--ui-muted)]">Describe the need once. GAVEA structures scope, sources partners and returns a proposal.</p>
         </div>
-        {state.draftRepeatedFrom && (
-          <Badge tone="accent">
-            {Icon.repeat} Repeated from {state.draftRepeatedFrom}
-          </Badge>
-        )}
+        <div className="flex flex-wrap items-center gap-2">
+          {state.draftRepeatedFrom && (
+            <Badge tone="accent">
+              {Icon.repeat} Repeated from {state.draftRepeatedFrom}
+            </Badge>
+          )}
+          <Btn size="sm" variant="ghost" onClick={() => { dispatch({ type: "FILL_EXAMPLE" }); setErrors({}); }}>
+            Fill with example
+          </Btn>
+        </div>
       </div>
 
       {/* serviço */}
@@ -317,7 +322,7 @@ function ProposalCard({ req }: { req: ServiceRequest }) {
   const p = req.proposal;
   if (!p || !p.published) {
     return (
-      <Panel title="Proposal">
+      <Panel title="Proposal" tour="proposal">
         <p className="text-[13px] text-[var(--ui-muted)]">
           The proposal appears here when GAVEA publishes it. Internal sourcing and partner terms are never shown in this view.
         </p>
@@ -326,6 +331,7 @@ function ProposalCard({ req }: { req: ServiceRequest }) {
   }
   return (
     <Panel
+      tour="proposal"
       title={
         <span className="flex items-center gap-2">
           Proposal <span className="font-mono text-[11.5px] font-normal text-[var(--ui-muted)]">{p.ref}</span>
@@ -356,10 +362,10 @@ function ProposalCard({ req }: { req: ServiceRequest }) {
             ))}
           </ul>
         </div>
-        <div className="grid grid-cols-2 gap-3 rounded-[10px] border border-[var(--ui-line)] p-3">
+        <dl className="grid grid-cols-2 gap-3 rounded-[10px] border border-[var(--ui-line)] p-3">
           <KV k="Commercial terms" v="Shown in the formal proposal" />
           <KV k="Counterparty" v="GAVEA (concept)" />
-        </div>
+        </dl>
         {!p.accepted && req.stage === 3 && (
           <div className="flex flex-wrap gap-2">
             <Btn variant="primary" onClick={() => dispatch({ type: "CLIENT_ACCEPT", id: req.id, now: Date.now() })}>
@@ -401,7 +407,7 @@ function RequestDetail() {
       </div>
 
       <div className="grid gap-4 lg:grid-cols-[280px_1fr]">
-        <Panel title="Status">
+        <Panel title="Status" tour="form">
           <Timeline req={r} />
           <p className="mt-4 border-t border-[var(--ui-line)] pt-3 text-[11.5px] text-[var(--ui-muted)]">Demonstration stages. In the demo they advance through GAVEA and partner actions, not automatically.</p>
         </Panel>
@@ -454,7 +460,7 @@ function RequestDetail() {
           )}
 
           {r.closeout.length > 0 && (
-            <Panel title="Close-out documents" aside={<Badge tone="ok">Closed</Badge>}>
+            <Panel title="Close-out documents" tour="closeout" aside={<Badge tone="ok">Closed</Badge>}>
               <ul className="flex flex-wrap gap-2">
                 {r.closeout.map((d) => (
                   <li key={d} className="flex items-center gap-2 rounded-[8px] border border-[var(--ui-line)] px-2.5 py-1.5 text-[12.5px]">

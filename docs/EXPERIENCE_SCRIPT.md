@@ -1,5 +1,7 @@
 # GAVEA GLOBAL SERVICES · Experience script V1
 
+> **V2 (20/10/2026):** cold open em português, cadeia de valor na cena 02, nova cena "Por que pela GAVEA", demonstração guiada no portal, jornada Search → Execution na aquisição, piloto centrado em decisões e nova entrada do BUILD 2030. Detalhes em `V2_REFINEMENT.md`; este roteiro descreve a base V1.
+
 Roteiro final da experiência implementada. Single page navegada por scroll, oito cenas. Mix: cerca de 75% GLOBAL SERVICES e demonstração, 15% implantação e riscos, 10% ponte para o BUILD 2030.
 
 ## Direção de arte

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type MutableRefObject } from "react";
+import { largest, type Asset, type HeroRig } from "@/lib/assets";
 
 /**
  * Hero cinematográfico em WebGL puro (sem three.js: ~0 kB de dependência).
@@ -9,7 +10,13 @@ import { useEffect, useRef, useState, type MutableRefObject } from "react";
  *  - água com ondulação em perspectiva, mascarando o casco;
  *  - nuvens em deriva lenta e brilho cintilante no mar;
  *  - grade de cor navy, vinheta, aberração sutil nas bordas e grão.
- * Sem WebGL ou com movimento reduzido, cai para <img> estática.
+ * Enquadramento:
+ *  - paisagem: "cover", com o recorte acompanhando o foco do rig;
+ *  - retrato sem versão 9:16: a imagem ocupa a parte alta da tela com menos
+ *    ampliação, e o shader estende céu e mar acima e abaixo (evita pixelizar
+ *    styleframes de baixa resolução).
+ * Máscaras e foco vêm do rig (src/lib/assets.ts), então trocar a imagem não
+ * exige mexer no shader. Sem WebGL ou com movimento reduzido: <img> estática.
  */
 
 const VERT = `
@@ -29,6 +36,14 @@ uniform float uTime;
 uniform float uProg;
 uniform vec2 uMouse;
 uniform float uReveal;
+uniform float uExtend;  // 0 = cover, 1 = retrato estendido
+uniform float uK;       // largura da imagem em larguras de tela (modo estendido)
+uniform float uTop;     // topo da imagem na tela (modo estendido)
+uniform float uHorizon;
+uniform vec2 uFocus;
+uniform vec4 uHull;     // top, bottom, l0, r0
+uniform vec2 uHull2;    // l1, r1
+uniform vec4 uSuper;    // x0, x1, y0, y1
 varying vec2 vUv;
 
 float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
@@ -43,25 +58,33 @@ void main() {
   vec2 uv = vUv;
   float rs = uRes.x / uRes.y;
   float ri = uImg.x / uImg.y;
-  vec2 scale = rs > ri ? vec2(1.0, ri / rs) : vec2(rs / ri, 1.0);
-
-  // ponto focal: proa do navio; em telas estreitas o recorte acompanha o casco
-  vec2 focus = vec2(0.395, 0.56);
-  vec2 center = vec2(0.5 + (focus.x - 0.5) * clamp((1.0 - scale.x) * 1.6, 0.0, 1.0), 0.5);
-
+  vec2 focus = uFocus;
   float zoom = 1.045 + uProg * 0.24 + (1.0 - uReveal) * 0.06;
-  vec2 p = (uv - 0.5) * scale / zoom;
-  p += (focus - center) * uProg * 0.42;
-  p += uMouse * 0.01;
-  vec2 iuv = p + center;
+
+  // mapeamento tela -> imagem: s = unidades de imagem por unidade de tela,
+  // aS = âncora na tela, aI = ponto correspondente na imagem
+  vec2 s; vec2 aS; vec2 aI;
+  if (uExtend > 0.5) {
+    s = vec2(1.0 / uK, ri / (uK * rs));
+    float hw = 0.5 / uK;
+    aI = vec2(clamp(focus.x, hw, 1.0 - hw), focus.y);
+    aS = vec2(0.5, uTop + focus.y * (uK * rs / ri));
+  } else {
+    s = rs > ri ? vec2(1.0, ri / rs) : vec2(rs / ri, 1.0);
+    aI = vec2(0.5 + (focus.x - 0.5) * clamp((1.0 - s.x) * 1.6, 0.0, 1.0), 0.5);
+    aS = vec2(0.5);
+  }
+  vec2 iuv = aI + (uv - aS) * s / zoom;
+  iuv += (focus - aI) * uProg * 0.42;
+  iuv += uMouse * 0.01;
 
   // máscaras em coordenadas da imagem (y = 0 no topo)
-  float horizon = 0.205;
-  float t = clamp((iuv.y - 0.17) / 0.78, 0.0, 1.0);
-  float left = mix(0.30, 0.12, t);
-  float right = mix(0.51, 0.675, t);
-  float hull = smoothstep(left - 0.025, left + 0.01, iuv.x) * (1.0 - smoothstep(right - 0.01, right + 0.025, iuv.x)) * step(0.17, iuv.y);
-  float superS = step(0.30, iuv.x) * step(iuv.x, 0.51) * step(0.03, iuv.y) * step(iuv.y, 0.21);
+  float horizon = uHorizon;
+  float t = clamp((iuv.y - uHull.x) / (uHull.y - uHull.x), 0.0, 1.0);
+  float left = mix(uHull.z, uHull2.x, t);
+  float right = mix(uHull.w, uHull2.y, t);
+  float hull = smoothstep(left - 0.025, left + 0.01, iuv.x) * (1.0 - smoothstep(right - 0.01, right + 0.025, iuv.x)) * step(uHull.x, iuv.y);
+  float superS = step(uSuper.x, iuv.x) * step(iuv.x, uSuper.y) * step(uSuper.z, iuv.y) * step(iuv.y, uSuper.w);
   float ship = max(hull, superS);
 
   // água: ondulação com perspectiva (mais fina perto do horizonte)
@@ -84,6 +107,30 @@ void main() {
   col.r = texture2D(uTex, suv + ca).r;
   col.g = texture2D(uTex, suv).g;
   col.b = texture2D(uTex, suv - ca).b;
+
+  // modo estendido: céu acima e mar abaixo da imagem
+  if (uExtend > 0.5) {
+    float above = smoothstep(0.035, -0.01, iuv.y);
+    float drift = (noise(vec2(iuv.x * 3.0, uTime * 0.05)) - 0.5) * 0.06;
+    vec3 skyc = texture2D(uTex, vec2(clamp(iuv.x + drift, 0.0, 1.0), 0.015)).rgb;
+    skyc = mix(skyc, vec3(0.02, 0.045, 0.085), smoothstep(0.0, -0.5, iuv.y));
+    col = mix(col, skyc, above);
+
+    float under = smoothstep(0.88, 1.0, iuv.y);
+    // linha inferior borrada na horizontal e "quebrada" por ruído (sem listras verticais)
+    float dy = max(iuv.y - 1.0, 0.0);
+    float jx = (noise(vec2(dy * 24.0, uTime * 0.2)) - 0.5) * 0.18;
+    vec3 rowc = vec3(0.0);
+    for (int k = -3; k <= 3; k++) {
+      rowc += texture2D(uTex, vec2(clamp(iuv.x + jx + float(k) * 0.035, 0.0, 1.0), 0.975)).rgb;
+    }
+    rowc /= 7.0;
+    float fall = exp(-dy * 6.0);
+    vec3 seac = mix(vec3(0.012, 0.04, 0.07), rowc * 0.85, fall);
+    float ripple = noise(vec2(iuv.x * 60.0, iuv.y * 140.0 - uTime * 0.8));
+    seac += pow(ripple, 10.0) * 0.18 * fall;
+    col = mix(col, seac, under);
+  }
 
   float lum = dot(col, vec3(0.299, 0.587, 0.114));
 
@@ -124,13 +171,22 @@ function compile(gl: WebGLRenderingContext, type: number, src: string) {
 }
 
 type Props = {
-  src: string;
-  fallbackSrc: string;
-  alt: string;
+  asset: Asset;
+  rig: HeroRig;
+  /** rig da versão retrato, se ela existir e tiver outra composição */
+  rigPortrait?: HeroRig;
   progressRef: MutableRefObject<number>;
 };
 
-export function HeroCanvas({ src, fallbackSrc, alt, progressRef }: Props) {
+/** Largura da imagem, em larguras de tela, no modo retrato estendido. */
+function extendK(aspect: number) {
+  const t = Math.min(1, Math.max(0, (aspect - 0.46) / (1.2 - 0.46)));
+  return 1.6 + (1.15 - 1.6) * t;
+}
+
+export function HeroCanvas({ asset, rig, rigPortrait, progressRef }: Props) {
+  const alt = asset.alt;
+  const fallbackSrc = largest(asset).src;
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [mode, setMode] = useState<"pending" | "gl" | "static">("pending");
 
@@ -173,7 +229,26 @@ export function HeroCanvas({ src, fallbackSrc, alt, progressRef }: Props) {
       prog: gl.getUniformLocation(prog, "uProg"),
       mouse: gl.getUniformLocation(prog, "uMouse"),
       reveal: gl.getUniformLocation(prog, "uReveal"),
+      extend: gl.getUniformLocation(prog, "uExtend"),
+      k: gl.getUniformLocation(prog, "uK"),
+      top: gl.getUniformLocation(prog, "uTop"),
+      horizon: gl.getUniformLocation(prog, "uHorizon"),
+      focus: gl.getUniformLocation(prog, "uFocus"),
+      hull: gl.getUniformLocation(prog, "uHull"),
+      hull2: gl.getUniformLocation(prog, "uHull2"),
+      sup: gl.getUniformLocation(prog, "uSuper"),
     };
+
+    // versão retrato só quando existe e a tela é estreita
+    const narrow = window.innerWidth / window.innerHeight < 0.75;
+    const usePortrait = !!asset.portrait && narrow;
+    const src = usePortrait ? asset.portrait!.src : largest(asset).src;
+    const r = usePortrait && rigPortrait ? rigPortrait : rig;
+    gl.uniform1f(u.horizon, r.horizon);
+    gl.uniform2f(u.focus, r.focus.x, r.focus.y);
+    gl.uniform4f(u.hull, r.hull.top, r.hull.bottom, r.hull.l0, r.hull.r0);
+    gl.uniform2f(u.hull2, r.hull.l1, r.hull.r1);
+    gl.uniform4f(u.sup, r.superstructure.x0, r.superstructure.x1, r.superstructure.y0, r.superstructure.y1);
 
     let start = performance.now();
     let raf = 0;
@@ -244,6 +319,11 @@ export function HeroCanvas({ src, fallbackSrc, alt, progressRef }: Props) {
         gl.uniform1f(u.prog, smoothProg);
         gl.uniform2f(u.mouse, mouse.x, mouse.y);
         gl.uniform1f(u.reveal, 1 - Math.pow(1 - reveal, 3));
+        const aspect = canvas.width / canvas.height;
+        const ext = !usePortrait && aspect < 1.2;
+        gl.uniform1f(u.extend, ext ? 1 : 0);
+        gl.uniform1f(u.k, extendK(aspect));
+        gl.uniform1f(u.top, 0.17);
         gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
       }
       raf = requestAnimationFrame(frame);
@@ -257,7 +337,7 @@ export function HeroCanvas({ src, fallbackSrc, alt, progressRef }: Props) {
       window.removeEventListener("pointermove", onMove);
       gl.getExtension("WEBGL_lose_context")?.loseContext();
     };
-  }, [src, progressRef]);
+  }, [asset, rig, rigPortrait, progressRef]);
 
   return (
     <div className="absolute inset-0 bg-abyss">
@@ -268,8 +348,8 @@ export function HeroCanvas({ src, fallbackSrc, alt, progressRef }: Props) {
         alt={mode === "static" ? alt : ""}
         aria-hidden={mode === "static" ? undefined : true}
         fetchPriority="high"
-        className="img-cover"
-        style={{ objectPosition: "40% 50%", filter: "brightness(0.78) saturate(0.9)" }}
+        className="hero-poster"
+        style={{ ["--fx" as string]: rig.focus.x, filter: "brightness(0.78) saturate(0.9)" }}
       />
       <canvas
         ref={canvasRef}

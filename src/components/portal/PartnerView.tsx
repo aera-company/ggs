@@ -145,7 +145,7 @@ export function PartnerView() {
 
       <div className="grid gap-4 xl:grid-cols-[1fr_320px]">
         <div className="grid content-start gap-4">
-          <section>
+          <section data-tour="invitations" className="rounded-[14px]">
             <h4 className="mb-2 font-mono text-[10.5px] uppercase tracking-[0.06em] text-[var(--ui-muted)]">Invitations to quote</h4>
             {invites.length === 0 ? (
               <Empty title="No open invitations">Invitations appear when GAVEA starts partner sourcing for a request in your region.</Empty>
@@ -157,7 +157,7 @@ export function PartnerView() {
               </ul>
             )}
           </section>
-          <section>
+          <section data-tour="awarded" className="rounded-[14px]">
             <h4 className="mb-2 font-mono text-[10.5px] uppercase tracking-[0.06em] text-[var(--ui-muted)]">Awarded work</h4>
             {jobs.length === 0 ? (
               <Empty title="No awarded work in this session" />

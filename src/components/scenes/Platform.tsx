@@ -198,24 +198,11 @@ export function Platform() {
       {/* LIVE DEMO */}
       <div className="bg-[var(--light-bg)] pb-24 text-ui-ink md:pb-32">
         <div className="wrap">
-          <div className="mb-8 grid gap-6 border-t border-[var(--light-line)] pt-8 md:grid-cols-[1fr_auto] md:items-end">
+          <div className="mb-6 flex flex-col gap-3 border-t border-[var(--light-line)] pt-8 md:flex-row md:items-end md:justify-between">
             <div>
-              <p className="t-label mb-3 text-ui-muted">Live demo · dados demonstrativos</p>
-              <p className="t-m max-w-[40ch]">Experimente a jornada completa. Cada perspectiva vê apenas o que lhe cabe.</p>
+              <p className="t-label mb-3 text-ui-muted">Live demo</p>
+              <p className="t-m max-w-[34ch]">Três perspectivas, um só processo. Cada uma vê apenas o que lhe cabe.</p>
             </div>
-            <ol className="grid gap-x-8 gap-y-2 text-[0.88rem] text-ui-muted sm:grid-cols-2">
-              {[
-                "Crie uma solicitação de Tank Cleaning",
-                "Qualifique e convide parceiros em GAVEA Operations",
-                "Responda como parceiro em Partner view",
-                "Publique, aceite e acompanhe até o encerramento",
-              ].map((s, i) => (
-                <li key={s} className="flex gap-2">
-                  <span className="font-mono text-ui-accent">{i + 1}</span>
-                  {s}
-                </li>
-              ))}
-            </ol>
           </div>
 
           <PortalDemo />

@@ -2,8 +2,8 @@
 
 import { createContext, useContext, useEffect, useReducer, type Dispatch } from "react";
 import { RESET_EVENT } from "@/lib/scenes";
-import { buildProposal, EMPTY_RFQ, initialSession, OPS_CHECKS, PARTNERS } from "./data";
-import type { Attachment, DemoSession, ExecUpdate, LogEntry, RFQ, ServiceRequest, StageIndex, ViewId } from "./types";
+import { buildProposal, EMPTY_RFQ, EXAMPLE_ATTACHMENT, EXAMPLE_RFQ, initialSession, OPS_CHECKS, PARTNERS } from "./data";
+import type { Attachment, DemoSession, ExecUpdate, LogEntry, RFQ, ServiceRequest, StageIndex, TourState, ViewId } from "./types";
 
 export type Action =
   | { type: "SET_VIEW"; view: ViewId }
@@ -27,6 +27,8 @@ export type Action =
   | { type: "REPEAT"; id: string }
   | { type: "SET_PARTNER"; partnerId: string }
   | { type: "TOAST"; message: string | null }
+  | { type: "FILL_EXAMPLE" }
+  | { type: "TOUR"; tour: Partial<TourState> }
   | { type: "RESET" };
 
 const EXEC_TEXT: Record<ExecUpdate["kind"], string> = {
@@ -255,6 +257,10 @@ function reducer(s: DemoSession, a: Action): DemoSession {
       return { ...s, partnerId: a.partnerId };
     case "TOAST":
       return { ...s, toast: a.message };
+    case "FILL_EXAMPLE":
+      return { ...s, draft: { ...EXAMPLE_RFQ }, draftAttachments: [EXAMPLE_ATTACHMENT], draftRepeatedFrom: undefined };
+    case "TOUR":
+      return { ...s, tour: { ...s.tour, ...a.tour } };
     case "RESET":
       return initialSession();
   }
@@ -285,5 +291,8 @@ export function useDemo() {
   if (!v) throw new Error("useDemo fora do DemoProvider");
   return v;
 }
+
+/** Solicitação que o tour acompanha: a mais recente criada na sessão. */
+export const tourRequest = (s: DemoSession) => s.requests.find((r) => r.origin === "session") ?? null;
 
 export const selectedRequest = (s: DemoSession) => s.requests.find((r) => r.id === s.selectedId) ?? null;

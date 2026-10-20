@@ -4,6 +4,7 @@ import { RefreshOnLoad } from "@/components/motion/RefreshOnLoad";
 import { ColdOpen } from "@/components/scenes/ColdOpen";
 import { Opportunity } from "@/components/scenes/Opportunity";
 import { BusinessModel } from "@/components/scenes/BusinessModel";
+import { Advantage } from "@/components/scenes/Advantage";
 import { Platform } from "@/components/scenes/Platform";
 import { WhyClients } from "@/components/scenes/WhyClients";
 import { GoToMarket } from "@/components/scenes/GoToMarket";
@@ -22,6 +23,7 @@ export default function Home() {
         <ColdOpen />
         <Opportunity />
         <BusinessModel />
+        <Advantage />
         <Platform />
         <WhyClients />
         <GoToMarket />

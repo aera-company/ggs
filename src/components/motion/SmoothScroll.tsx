@@ -28,8 +28,10 @@ export function SmoothScroll({ children }: { children: React.ReactNode }) {
     gsap.ticker.lagSmoothing(0);
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setLenis(instance);
-    // gancho de QA: permite navegar por cena em capturas automatizadas
-    (window as unknown as { __ggs?: { lenis: Lenis } }).__ggs = { lenis: instance };
+    // gancho de QA (só em desenvolvimento ou com ?qa na URL)
+    if (process.env.NODE_ENV !== "production" || new URLSearchParams(window.location.search).has("qa")) {
+      (window as unknown as { __ggs?: { lenis: Lenis } }).__ggs = { lenis: instance };
+    }
 
     return () => {
       if (tickRef.current) gsap.ticker.remove(tickRef.current);

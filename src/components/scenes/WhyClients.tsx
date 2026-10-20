@@ -147,7 +147,6 @@ export function WhyClients() {
             </li>
           ))}
         </ol>
-        <p className="mt-6 text-[0.8rem] text-ui-muted">Sem promessas de economia, prazo ou cobertura: o ganho apresentado é de experiência e controle.</p>
       </div>
     </section>
   );

@@ -23,7 +23,7 @@ function Sourcing({ r }: { r: ServiceRequest }) {
   const canInvite = r.stage === 1 && allChecksDone(r) && picked.length > 0;
 
   return (
-    <Panel title="Partner sourcing" aside={<Internal />}>
+    <Panel title="Partner sourcing" tour="sourcing" aside={<Internal />}>
       <ul className="grid gap-2">
         {candidates.map((p) => {
           const expired = p.qualification.some((q) => q.status === "expired");
@@ -78,7 +78,7 @@ function Composition({ r }: { r: ServiceRequest }) {
   const sel = r.ops.quotes.find((q) => q.partnerId === r.ops.selected);
   const clientIdx = sel ? Math.round(sel.index * (1 + r.ops.margin / 100)) : null;
   return (
-    <Panel title="Commercial composition" aside={<Internal />}>
+    <Panel title="Commercial composition" tour="composition" aside={<Internal />}>
       {r.ops.quotes.length === 0 ? (
         <p className="text-[13px] text-[var(--ui-muted)]">Waiting for quotes from invited partners. Switch to Partner view to answer as a partner.</p>
       ) : (
@@ -162,7 +162,7 @@ function OpsDetail({ r }: { r: ServiceRequest }) {
 
       <div className="grid gap-4 xl:grid-cols-[1fr_300px]">
         <div className="grid gap-4">
-          <Panel title="Qualification" aside={<span className="font-mono text-[11px] text-[var(--ui-muted)]">{OPS_CHECKS.filter((c) => r.ops.checks[c.id]).length}/{OPS_CHECKS.length}</span>}>
+          <Panel title="Qualification" tour="qualification" aside={<span className="font-mono text-[11px] text-[var(--ui-muted)]">{OPS_CHECKS.filter((c) => r.ops.checks[c.id]).length}/{OPS_CHECKS.length}</span>}>
             <ul className="grid gap-1.5">
               {OPS_CHECKS.map((c) => (
                 <li key={c.id}>

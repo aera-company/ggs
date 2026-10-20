@@ -75,3 +75,15 @@ npm run gen:map    # regenera src/data/world-dots.json
 - [ ] Manter `noindex` e considerar proteção por senha na Vercel.
 - [ ] Criar a imagem OG 1200×630 (ausente na V1).
 - [ ] Deploy só com ordem explícita.
+
+## V2 (20/10/2026)
+
+| Verificação | Resultado |
+|---|---|
+| `tsc` / `eslint` / `next build` | Limpos |
+| WebKit desktop 1440×900 | Sem erros; WebGL ativo; tour de 8 passos concluído; axe sem violações |
+| WebKit iPhone 390×844 | Sem erros; hero em modo estendido; tour concluído; axe sem violações; sem overflow |
+| WebKit movimento reduzido | Sem Lenis e sem WebGL; cenas empilhadas; títulos presentes |
+| Títulos animados | Nenhum nome acessível duplicado (árvore ARIA verificada) |
+
+Script de QA usado (fora do repositório): Playwright WebKit + axe-core, navegando por 13 pontos das cenas e executando o tour. `window.__ggs` agora só existe em desenvolvimento ou com `?qa`.

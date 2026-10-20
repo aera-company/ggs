@@ -77,7 +77,7 @@ export function Header() {
         aria-hidden="true"
       />
       <div className="wrap relative flex h-full items-center justify-between gap-4">
-        <a href="#request" className="flex items-center gap-3 rounded-sm" aria-label="GAVEA Global Services, voltar ao início" onClick={(e) => { e.preventDefault(); restart(); }}>
+        <a href="#request" className="flex items-center gap-3 rounded-sm" onClick={(e) => { e.preventDefault(); restart(); }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/brand/gavea-group-white.png"
@@ -92,10 +92,11 @@ export function Header() {
           <span className={`t-label hidden rounded-full border px-2 py-[3px] text-[0.6rem] sm:block ${light ? "border-ui-ink/20 text-ui-muted" : "border-paper/20 text-faint"}`}>
             Concept
           </span>
+          <span className="sr-only">, voltar ao início</span>
         </a>
 
         <div className="flex items-center gap-4">
-          <p className="t-label flex items-center gap-2" aria-live="polite">
+          <p className="t-label flex items-center gap-2">
             <span className={light ? "text-ui-accent" : "text-signal"}>{scene.n}</span>
             <span className={`hidden md:inline ${light ? "text-ui-muted" : "text-mist"}`}>{scene.label}</span>
           </p>
@@ -103,7 +104,7 @@ export function Header() {
             type="button"
             onClick={restart}
             className={`t-label flex min-h-[36px] items-center gap-2 rounded-full border px-3 text-[0.62rem] transition-colors ${light ? "border-ui-ink/15 hover:bg-ui-ink/5" : "border-paper/15 hover:bg-paper/10"}`}
-            aria-label="Reiniciar a experiência"
+            aria-label="Restart experience"
           >
             <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true">
               <path d="M2 6a4 4 0 1 0 1.2-2.85M2 1.5V4h2.5" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />

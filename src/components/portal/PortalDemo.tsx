@@ -4,6 +4,7 @@ import { useRef, type KeyboardEvent } from "react";
 import { ClientView } from "./ClientView";
 import { OpsView } from "./OpsView";
 import { PartnerView } from "./PartnerView";
+import { GuidedTour, tourTarget } from "./GuidedTour";
 import { DemoProvider, nextStep, useDemo } from "./store";
 import type { ViewId } from "./types";
 import { Badge, Btn, cx, Icon } from "./ui";
@@ -100,7 +101,7 @@ function DemoBar() {
     <div className="flex flex-col gap-3 border-t border-[var(--ui-line)] bg-[#f9fafb] px-4 py-3 md:flex-row md:items-center md:justify-between md:px-5">
       <p className="flex items-center gap-2 text-[11.5px] text-[var(--ui-muted)]">
         <span className="size-1.5 rounded-full bg-[var(--ui-accent)]" aria-hidden="true" />
-        All data is fictitious and lives only in this browser tab. No login, upload, email or payment.
+        Fictitious data, kept only in this browser tab. Nothing is sent anywhere.
       </p>
       <div className="flex flex-wrap items-center gap-2">
         <Btn
@@ -114,6 +115,8 @@ function DemoBar() {
             <>
               Simulate next step <span className="hidden font-normal text-white/60 lg:inline">· {step}</span>
             </>
+          ) : state.requests.some((r) => r.origin === "session") ? (
+            "All demo requests closed"
           ) : (
             "Submit a request to simulate"
           )}
@@ -131,7 +134,11 @@ function Shell() {
   const view = VIEWS.find((v) => v.id === state.view)!;
 
   return (
-    <div className="overflow-hidden rounded-[22px] border border-[#d5dce2] bg-[var(--ui-bg)] text-[var(--ui-ink)] shadow-[0_40px_120px_-40px_rgba(8,30,47,0.45),0_2px_6px_rgba(8,30,47,0.06)]" style={{ fontVariationSettings: '"wdth" 100' }}>
+    <div
+      data-tour-target={tourTarget(state) ?? undefined}
+      className="overflow-hidden rounded-[22px] border border-[#d5dce2] bg-[var(--ui-bg)] text-[var(--ui-ink)] shadow-[0_40px_120px_-40px_rgba(8,30,47,0.45),0_2px_6px_rgba(8,30,47,0.06)]"
+      style={{ fontVariationSettings: '"wdth" 100' }}
+    >
       {/* barra superior */}
       <div className="flex flex-col gap-3 border-b border-[var(--ui-line)] bg-white px-4 py-3 md:flex-row md:items-center md:justify-between md:px-5">
         <div className="flex items-center gap-3">
@@ -146,7 +153,7 @@ function Shell() {
 
       <div className="flex items-center justify-between gap-3 border-b border-[var(--ui-line)] bg-white/60 px-4 py-2 md:px-5">
         <p className="text-[12px] text-[var(--ui-muted)]">
-          Viewing as <span className="font-medium text-[var(--ui-ink)]">{view.who}</span> <span className="text-[var(--ui-muted)]">(simulated perspective, no authentication)</span>
+          Viewing as <span className="font-medium text-[var(--ui-ink)]">{view.who}</span> <span className="text-[var(--ui-muted)]">· demo perspective, no login</span>
         </p>
       </div>
 
@@ -181,7 +188,9 @@ function Shell() {
 export function PortalDemo() {
   return (
     <DemoProvider>
+      <GuidedTour placement="top" />
       <Shell />
+      <GuidedTour placement="bottom" />
     </DemoProvider>
   );
 }

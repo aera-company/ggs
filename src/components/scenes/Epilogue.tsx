@@ -5,6 +5,7 @@ import { gsap } from "@/lib/gsap";
 import { RESET_EVENT } from "@/lib/scenes";
 import { useScrollScene } from "../motion/useScrollScene";
 import { useLenis } from "../motion/SmoothScroll";
+import { AssetImage } from "../ui/AssetImage";
 import { SplitWords } from "../ui/SplitWords";
 
 // Link validado em 19/10/2026 (HTTP 200). Projeto independente da AERA.
@@ -18,26 +19,54 @@ export function Epilogue() {
     const l1 = el.querySelectorAll("[data-ep-1] .split-word > span");
     const l2 = el.querySelectorAll("[data-ep-2] .split-word > span");
     const lines = el.querySelector("[data-ep-lines]");
+    const horizon = el.querySelector("[data-ep-horizon]");
+    const year = el.querySelector<HTMLElement>("[data-ep-year]")!;
     const frame = el.querySelector("[data-ep-frame]");
     const img = el.querySelector("[data-ep-img]");
     const reveal = gsap.utils.toArray<HTMLElement>("[data-ep-reveal]", el);
 
     gsap.set([l1, l2], { yPercent: 110 });
-    gsap.set(frame, { clipPath: "inset(49.6% 12% 49.6% 12% round 4px)", autoAlpha: 0 });
-    gsap.set(reveal, { autoAlpha: 0, y: 18 });
+    gsap.set(horizon, { scaleX: 0, autoAlpha: 1 });
+    gsap.set(year, { autoAlpha: 0, y: 10 });
+    gsap.set(frame, { clipPath: "inset(49.8% 0% 49.8% 0%)", opacity: 0 });
+    // texto some só visualmente (continua para leitores de tela); o link some de fato até aparecer
+    const isLink = (r: HTMLElement) => r.tagName === "A";
+    reveal.forEach((r) => gsap.set(r, isLink(r) ? { autoAlpha: 0, y: 18 } : { opacity: 0, y: 18 }));
 
     const tl = gsap.timeline({
       defaults: { ease: "none" },
       scrollTrigger: { trigger: el.querySelector(".pin-track"), start: "top top", end: "bottom bottom", scrub: 0.6 },
     });
-    tl.to(l1, { yPercent: 0, stagger: 0.012, duration: 0.1 }, 0.02);
-    tl.to(l2, { yPercent: 0, stagger: 0.012, duration: 0.1 }, 0.18);
-    tl.to(lines, { autoAlpha: 0, y: -30, duration: 0.08 }, 0.42);
-    tl.set(frame, { autoAlpha: 1 }, 0.45);
-    tl.to(frame, { clipPath: "inset(18% 12% 18% 12% round 4px)", duration: 0.12, ease: "power2.inOut" }, 0.46);
-    tl.to(frame, { clipPath: "inset(0% 0% 0% 0% round 0px)", duration: 0.16, ease: "power2.inOut" }, 0.58);
-    tl.fromTo(img, { scale: 1.15 }, { scale: 1, duration: 0.4 }, 0.46);
-    reveal.forEach((r, i) => tl.to(r, { autoAlpha: 1, y: 0, duration: 0.06 }, 0.7 + i * 0.04));
+
+    // 1. a ponte em duas frases
+    tl.to(l1, { yPercent: 0, stagger: 0.01, duration: 0.08 }, 0.02);
+    tl.to(l2, { yPercent: 0, stagger: 0.01, duration: 0.08 }, 0.12);
+    tl.to(lines, { autoAlpha: 0, y: -30, duration: 0.06 }, 0.3);
+
+    // 2. um horizonte e o tempo avançando até 2030
+    tl.to(horizon, { scaleX: 1, duration: 0.1, ease: "power2.inOut" }, 0.28);
+    tl.to(year, { autoAlpha: 1, y: 0, duration: 0.04 }, 0.33);
+    const counter = { v: 2026 };
+    tl.to(
+      counter,
+      {
+        v: 2030,
+        duration: 0.16,
+        ease: "power1.inOut",
+        onUpdate: () => {
+          year.textContent = String(Math.round(counter.v));
+        },
+      },
+      0.34,
+    );
+    tl.to(year, { autoAlpha: 0, y: -16, duration: 0.04 }, 0.52);
+
+    // 3. o horizonte se abre na visão BUILD 2030
+    tl.set(frame, { opacity: 1 }, 0.53);
+    tl.to(frame, { clipPath: "inset(0% 0% 0% 0%)", duration: 0.16, ease: "power3.inOut" }, 0.53);
+    tl.to(horizon, { autoAlpha: 0, duration: 0.05 }, 0.58);
+    tl.fromTo(img, { scale: 1.22 }, { scale: 1, duration: 0.4, ease: "power1.out" }, 0.53);
+    reveal.forEach((r, i) => tl.to(r, isLink(r) ? { autoAlpha: 1, y: 0, duration: 0.05 } : { opacity: 1, y: 0, duration: 0.05 }, 0.72 + i * 0.035));
     tl.to({}, { duration: 0.06 }, 0.94);
   });
 
@@ -49,7 +78,7 @@ export function Epilogue() {
 
   return (
     <section ref={ref} id="next" data-header-theme="dark" className="scene bg-abyss" aria-label="07 · The next GAVEA">
-      <div className="pin-track" style={{ ["--track" as string]: 320 }}>
+      <div className="pin-track" style={{ ["--track" as string]: 300 }}>
         <div className="pin-stage rm-flow">
           <div data-ep-lines className="wrap absolute inset-0 flex flex-col justify-center gap-6 rm-static">
             <p data-ep-1 className="t-l max-w-[26ch] text-mist">
@@ -60,15 +89,20 @@ export function Epilogue() {
             </p>
           </div>
 
+          {/* horizonte + ano: transição curta para a segunda conversa */}
+          <div className="pointer-events-none absolute inset-0 rm-hide" aria-hidden="true">
+            <div data-ep-horizon className="absolute inset-x-0 top-1/2 h-px origin-center bg-signal shadow-[0_0_30px_6px_rgba(58,169,210,0.45)]" style={{ transform: "scaleX(0)" }} />
+            <p
+              data-ep-year
+              className="absolute inset-x-0 bottom-[calc(50%+2.5vh)] text-center font-mono text-[clamp(3.5rem,11vw,10rem)] font-light leading-none tracking-[-0.04em] text-paper/90 tabular-nums"
+              style={{ opacity: 0 }}
+            >
+              2026
+            </p>
+          </div>
+
           <div data-ep-frame className="absolute inset-0 overflow-hidden rm-static" style={{ minHeight: "100%" }}>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              data-ep-img
-              src="/media/build2030-hero-frame.webp"
-              alt="Frame do hero BUILD 2030: terminal portuário ao entardecer, visualização 3D da AERA."
-              loading="lazy"
-              className="img-cover"
-            />
+            <AssetImage id="build2030" data-ep-img />
             <div className="absolute inset-0 bg-abyss/45" />
             <div className="absolute inset-0 scrim-b" />
 
@@ -85,6 +119,7 @@ export function Epilogue() {
                   <p className="t-body mt-3 text-mist">
                     Uma visão independente da AERA para posicionamento, comunicação, marketing e tecnologia da próxima fase da GAVEA.
                   </p>
+                  <p className="mt-4 text-[0.95rem] text-paper/90">Uma segunda conversa: como a GAVEA chega a 2030.</p>
                 </div>
                 <a data-ep-reveal href={BUILD2030_URL} target="_blank" rel="noopener noreferrer" className="btn-ghost self-start bg-abyss/40 backdrop-blur md:self-auto">
                   Conhecer BUILD 2030
