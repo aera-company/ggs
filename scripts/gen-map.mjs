@@ -49,5 +49,13 @@ const projected = Object.fromEntries(
 );
 
 mkdirSync("src/data", { recursive: true });
-writeFileSync("src/data/world-dots.json", JSON.stringify({ width: W, height: H, dots, places: projected }));
+// malha de pontos como SVG estático: o navegador rasteriza uma vez e reaproveita
+// (no Safari, redesenhar milhares de subcaminhos a cada quadro trava o scroll)
+const dotsD = dots.map(([x, y]) => `M${x} ${y}h0`).join("");
+writeFileSync(
+  "public/media/world-dots.svg",
+  `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}"><path d="${dotsD}" stroke="#9aa8b6" stroke-opacity="0.32" stroke-width="2.1" stroke-linecap="round" fill="none"/></svg>`,
+);
+// no bundle só vai o que a cena usa: dimensões e pontos rotulados
+writeFileSync("src/data/world-dots.json", JSON.stringify({ width: W, height: H, count: dots.length, places: projected }));
 console.log(`world-dots.json: ${dots.length} pontos`);

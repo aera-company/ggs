@@ -3,8 +3,6 @@ import data from "@/data/world-dots.json";
 type Place = { label: string; x: number; y: number; kind: "home" | "scenario" };
 const places = data.places as Record<string, Place>;
 
-/** Caminho de um único traço para todos os pontos: barato de desenhar. */
-const DOTS_D = data.dots.map(([x, y]) => `M${x} ${y}h0`).join("");
 
 /** Arco quadrático entre dois pontos, curvado para "cima" do mapa. */
 export function arcPath(a: Place, b: Place, lift = 0.32) {
@@ -38,23 +36,14 @@ export function WorldMap({ className }: { className?: string }) {
       aria-label="Mapa conceitual: GAVEA no Brasil conectada a quatro portos de cenário hipotético (Singapore, Rotterdam, Houston e Fujairah). Não representa cobertura implantada."
     >
       <defs>
-        <radialGradient id="wm-reveal" cx={home.x / data.width} cy={home.y / data.height} r="1" gradientUnits="objectBoundingBox">
-          <stop offset="0" stopColor="#fff" />
-          <stop data-reveal-stop offset="1" stopColor="#fff" />
-          <stop data-reveal-edge offset="1" stopColor="#000" />
-        </radialGradient>
-        <mask id="wm-mask">
-          <rect width={data.width} height={data.height} fill="url(#wm-reveal)" />
-        </mask>
         <linearGradient id="wm-arc" x1="0" x2="1">
           <stop offset="0" stopColor="#3aa9d2" stopOpacity="0.15" />
           <stop offset="1" stopColor="#3aa9d2" stopOpacity="0.95" />
         </linearGradient>
       </defs>
 
-      <g mask="url(#wm-mask)">
-        <path d={DOTS_D} stroke="#9aa8b6" strokeOpacity="0.32" strokeWidth="2.1" strokeLinecap="round" fill="none" />
-      </g>
+      {/* malha estática (scripts/gen-map.mjs): rasterizada uma vez, sem custo por quadro */}
+      <image data-dots href="/media/world-dots.svg" x="0" y="0" width={data.width} height={data.height} />
 
       {ROUTES.map((k) => (
         <path

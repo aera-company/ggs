@@ -126,16 +126,16 @@ export function BusinessModel() {
 
   return (
     <section ref={ref} id="model" data-header-theme="dark" className="scene bg-navy-deep" aria-label="02 · O modelo">
-      <div className="pin-track" style={{ ["--track" as string]: 480 }}>
+      <div className="pin-track" style={{ ["--track" as string]: 300 }}>
         <div className="pin-stage rm-flow">
           {/* imagens de fundo por etapa */}
           <div className="absolute inset-0 rm-hide" aria-hidden="true">
             {BEATS.map((b) => (
               <div key={b.img} data-bm-img className="absolute inset-0">
-                <AssetImage id={b.img} decorative style={{ filter: "saturate(0.8) contrast(1.05)" }} />
+                <AssetImage id={b.img} decorative />
               </div>
             ))}
-            <div className="absolute inset-0 bg-navy-deep/55" />
+            <div className="absolute inset-0 bg-navy-deep/60" />
             <div className="absolute inset-0 scrim-b" />
             <div className="absolute inset-0 scrim-l opacity-70" />
           </div>
@@ -175,7 +175,7 @@ export function BusinessModel() {
               {/* mobile: stepper */}
               <ol className="grid grid-cols-5 gap-1.5 md:hidden" aria-label="Etapas da cadeia de valor">
                 {BEATS.map((b, i) => (
-                  <li key={b.verb} data-bm-step className="rounded-[10px] border border-signal/40 bg-abyss/60 px-1 py-2 text-center backdrop-blur">
+                  <li key={b.verb} data-bm-step className="rounded-[10px] border border-signal/40 bg-abyss/80 px-1 py-2 text-center">
                     <span className="block font-mono text-[0.7rem] text-signal">{i + 1}</span>
                     <span className="mt-0.5 block text-[0.64rem] leading-tight text-paper/90">{b.verb}</span>
                   </li>
@@ -183,7 +183,7 @@ export function BusinessModel() {
               </ol>
 
               {/* desktop: raias */}
-              <div className="relative hidden rounded-[18px] border border-paper/10 bg-abyss/50 px-3 py-4 backdrop-blur-md md:block md:px-6">
+              <div className="relative hidden rounded-[18px] border border-paper/10 bg-abyss/80 px-3 py-4 md:block md:px-6">
                 <svg
                   viewBox="0 0 1000 164"
                   className="h-auto w-full"

@@ -245,7 +245,7 @@ export function GuidedTour({ placement }: { placement: "top" | "bottom" }) {
 
   return (
     <div ref={barRef} className="sticky bottom-3 z-30 mt-5" role="region" aria-label="Demonstração guiada">
-      <div className="rounded-[18px] border border-[#cfd8df] bg-white/92 p-4 text-ui-ink shadow-[0_-10px_60px_-30px_rgba(8,30,47,0.55)] backdrop-blur-xl md:p-5">
+      <div className="rounded-[18px] border border-[#cfd8df] bg-white p-4 text-ui-ink shadow-[0_-10px_60px_-30px_rgba(8,30,47,0.55)] md:p-5">
         {mode === "intro" ? (
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>

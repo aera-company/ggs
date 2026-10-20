@@ -35,7 +35,7 @@ Etapa de refinamento sobre a V1 publicada (ggs-portal.vercel.app). A arquitetura
 
 ## 5. Direção editorial
 
-- **Cold open em português** ("Um navio em Singapura precisa de limpeza de tanques." / "O desafio não é só encontrar um fornecedor." / "É ter alguém que responda pelo resultado."). Marca, conceitos e a demonstração internacional continuam em inglês.
+- **Cold open em português**, em quatro frases ("Um navio chega a Singapura." / "Os tanques precisam estar limpos antes da próxima carga." / "O desafio não é encontrar um fornecedor." / "É ter alguém que responda pelo resultado."), ajustado em 20/10 após avaliação do Tiago. Marca, conceitos e a demonstração internacional continuam em inglês.
 - **Avisos enxugados:** saíram as etiquetas por imagem, a lista de instruções do demo (o tour substitui), a nota interna da cena 04 e frases redundantes da UI. Ficaram a pílula "Cenário ilustrativo" no hero, a legenda do mapa, o selo "Demo" e uma linha no portal, o selo "não publicado" na jornada de aquisição e o aviso completo no rodapé.
 - **Piloto enxuto:** o centro da seção agora são as cinco decisões da liderança (serviço e região, papel contratual, critérios de homologação, quem conduz, relação com o GAVEA TRADE). Os marcos ficaram compactos, os riscos críticos num painel expansível, e há um próximo passo proposto (workshop de validação).
 
@@ -50,3 +50,16 @@ Etapa de refinamento sobre a V1 publicada (ggs-portal.vercel.app). A arquitetura
 - **Movimento reduzido:** sem Lenis e sem WebGL, cenas empilhadas e legíveis (verificado em WebKit).
 - O gancho de QA `window.__ggs` só existe em desenvolvimento ou com `?qa` na URL.
 - Lint e build de produção limpos.
+
+## 8. Ajuste de scroll e abertura (20/10, após avaliação)
+
+- **Abertura reescrita** em quatro frases curtas, escolhidas pelo Tiago.
+- **Cenas presas cerca de 36% mais curtas** (de ~29 para ~19 telas de rolagem somadas).
+- **Engasgos eliminados** (medido com rolagem contínua, quadros acima de 34 ms):
+  - Mapa: a malha de 3.000 pontos com máscara SVG era redesenhada na CPU a cada quadro no Safari (100% de quadros longos). Agora é uma imagem estática (`public/media/world-dots.svg`), revelada por opacidade.
+  - Grão de filme sem `mix-blend-mode` e sem camada maior que a tela; sem `backdrop-filter` no cabeçalho, nas raias e no tour; sem filtros CSS em imagens que se movem.
+  - Varredura do Portal Reveal com transforms (wipe por duas camadas opostas) em vez de `clip-path`, e a linha por `transform` em vez de `top`.
+  - Cabeçalho mede posições só quando o layout muda (antes lia `getBoundingClientRect` a cada quadro).
+  - Imagens pré-decodificadas em segundo plano depois da carga, para a primeira exibição não dar tranco.
+  - Hero WebGL com resolução interna menor no desktop (DPR máximo 1.3).
+- **Resultado no WebKit:** de 21% (abertura), 100% (mapa) e 18% (cadeia de valor) de quadros longos para 0% em todas as cenas. No Chrome, só o primeiro gesto de rolagem tem um quadro longo.

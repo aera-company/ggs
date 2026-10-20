@@ -9,8 +9,9 @@ import { SplitWords } from "../ui/SplitWords";
 import { useLenis } from "../motion/SmoothScroll";
 
 const LINES = [
-  "Um navio em Singapura precisa de limpeza de tanques.",
-  "O desafio não é só encontrar um fornecedor.",
+  "Um navio chega a Singapura.",
+  "Os tanques precisam estar limpos antes da próxima carga.",
+  "O desafio não é encontrar um fornecedor.",
   "É ter alguém que responda pelo resultado.",
 ];
 
@@ -48,26 +49,27 @@ export function ColdOpen() {
 
     const wordsOut = (line: HTMLElement) => line.querySelectorAll(".split-word > span");
 
-    // linha 1 sai
-    tl.to(wordsOut(lines[0]), { yPercent: -110, stagger: 0.006, duration: 0.05 }, 0.12);
-    tl.set(lines[0], { autoAlpha: 0 }, 0.2);
-
-    // linha 2: entra, segura, sai
-    tl.set(lines[1], { autoAlpha: 1 }, 0.19);
-    tl.from(wordsOut(lines[1]), { yPercent: 110, stagger: 0.006, duration: 0.05 }, 0.2);
-    tl.to(wordsOut(lines[1]), { yPercent: -110, stagger: 0.005, duration: 0.05 }, 0.38);
-    tl.set(lines[1], { autoAlpha: 0 }, 0.45);
-
-    // linha 3
-    tl.set(lines[2], { autoAlpha: 1 }, 0.44);
-    tl.from(wordsOut(lines[2]), { yPercent: 110, stagger: 0.008, duration: 0.05 }, 0.45);
-    tl.to(wordsOut(lines[2]), { yPercent: -110, stagger: 0.006, duration: 0.05 }, 0.6);
-    tl.set(lines[2], { autoAlpha: 0 }, 0.67);
+    // frases em sequência: cada uma entra, segura e sai (a primeira já vem da carga)
+    const SLOTS = [
+      [0, 0.12],
+      [0.15, 0.29],
+      [0.32, 0.46],
+      [0.49, 0.63],
+    ];
+    lines.forEach((line, i) => {
+      const [inAt, outAt] = SLOTS[i];
+      if (i > 0) {
+        tl.set(line, { autoAlpha: 1 }, inAt - 0.005);
+        tl.from(wordsOut(line), { yPercent: 110, stagger: 0.005, duration: 0.04 }, inAt);
+      }
+      tl.to(wordsOut(line), { yPercent: -110, stagger: 0.004, duration: 0.035 }, outAt);
+      tl.set(line, { autoAlpha: 0 }, outAt + 0.06);
+    });
 
     // revelação da marca
     tl.fromTo(reveal, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.02 }, 0.68);
-    tl.from(el.querySelectorAll("[data-reveal] .split-word > span"), { yPercent: 110, stagger: 0.015, duration: 0.08 }, 0.68);
-    tl.from("[data-reveal-sub]", { autoAlpha: 0, y: 24, duration: 0.06, stagger: 0.02 }, 0.76);
+    tl.from(el.querySelectorAll("[data-reveal] .split-word > span"), { yPercent: 110, stagger: 0.015, duration: 0.07 }, 0.68);
+    tl.from("[data-reveal-sub]", { autoAlpha: 0, y: 24, duration: 0.05, stagger: 0.02 }, 0.75);
     tl.to("[data-scroll-hint]", { autoAlpha: 0, duration: 0.03 }, 0.01);
     tl.to("[data-hud]", { yPercent: desktop ? 0 : 0, autoAlpha: 0.5, duration: 0.2 }, 0.7);
     tl.to({}, { duration: 0.06 }, 0.94);
@@ -82,7 +84,7 @@ export function ColdOpen() {
 
   return (
     <section ref={ref} id="request" data-header-theme="dark" className="scene bg-abyss" aria-label="00 · The request">
-      <div className="pin-track" style={{ ["--track" as string]: 420 }}>
+      <div className="pin-track" style={{ ["--track" as string]: 300 }}>
         <div className="pin-stage rm-flow">
           <HeroCanvas asset={ASSETS.heroVessel} rig={HERO_RIG} progressRef={progressRef} />
           <div className="absolute inset-0 scrim-b opacity-80" aria-hidden="true" />
@@ -100,7 +102,7 @@ export function ColdOpen() {
 
           {/* sequência de frases */}
           <div className="wrap absolute inset-x-0 bottom-[16vh] md:bottom-[14vh] rm-static">
-            <div className="relative min-h-[2.2em] t-xl max-w-[15ch] md:max-w-[19ch]">
+            <div className="relative min-h-[2.2em] t-xl max-w-[15ch] md:max-w-[20ch]">
               {LINES.map((l, i) => (
                 <p key={l} data-line className={`${i === 0 ? "relative" : "absolute inset-x-0 bottom-0"} rm-static`}>
                   <SplitWords text={l} />

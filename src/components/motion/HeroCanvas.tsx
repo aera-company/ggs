@@ -275,7 +275,7 @@ export function HeroCanvas({ asset, rig, rigPortrait, progressRef }: Props) {
     };
     img.onerror = () => setMode("static");
 
-    const dprCap = window.innerWidth < 900 ? 1.25 : 1.6;
+    const dprCap = window.innerWidth < 900 ? 1.25 : 1.3;
     const resize = () => {
       const dpr = Math.min(window.devicePixelRatio || 1, dprCap);
       const w = Math.round(canvas.clientWidth * dpr);

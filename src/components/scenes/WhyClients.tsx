@@ -89,7 +89,7 @@ export function WhyClients() {
 
   return (
     <section ref={ref} id="why" data-header-theme="light" className="scene bg-[var(--light-bg)] text-ui-ink" aria-label="04 · Por que o portal">
-      <div className="pin-track" style={{ ["--track" as string]: 240 }}>
+      <div className="pin-track" style={{ ["--track" as string]: 160 }}>
         <div className="pin-stage rm-flow">
           <div className="wrap grid h-full items-center gap-8 pt-[calc(var(--header-h)+3vh)] pb-[5vh] md:grid-cols-[0.9fr_1.1fr] rm-static">
             <div>

@@ -95,7 +95,7 @@ export function Advantage() {
       style={{ background: "radial-gradient(110% 80% at 75% 50%, #0b2539 0%, #050f1a 60%, #030a12 100%)" }}
       aria-label="02 · Por que contratar pela GAVEA"
     >
-      <div className="pin-track" style={{ ["--track" as string]: 300 }}>
+      <div className="pin-track" style={{ ["--track" as string]: 190 }}>
         <div className="pin-stage rm-flow">
           <div className="wrap grid h-full grid-rows-[auto_1fr_auto] gap-4 pt-[calc(var(--header-h)+4vh)] pb-[5vh] md:grid-cols-[0.85fr_1.15fr] md:grid-rows-1 md:items-center md:gap-10 rm-static">
             <div className="md:self-center">

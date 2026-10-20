@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { ScrollTrigger } from "@/lib/gsap";
 import { RESET_EVENT, SCENES } from "@/lib/scenes";
 import { useLenis } from "./motion/SmoothScroll";
 
@@ -15,26 +16,42 @@ export function Header() {
   const barRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const els = SCENES.map((s) => document.getElementById(s.id)).filter(Boolean) as HTMLElement[];
+    // posições medidas só quando o layout muda; no scroll, apenas comparações com scrollY
+    // (ler getBoundingClientRect a cada quadro força layout e contribui para engasgos)
+    let sceneTops: number[] = [];
+    let themeRanges: { el: HTMLElement; top: number; bottom: number }[] = [];
+    let maxScroll = 1;
+    const measure = () => {
+      const y = window.scrollY;
+      sceneTops = SCENES.map((s) => {
+        const el = document.getElementById(s.id);
+        return el ? el.getBoundingClientRect().top + y : Infinity;
+      });
+      themeRanges = [...document.querySelectorAll<HTMLElement>("[data-header-theme]")].map((el) => {
+        const r = el.getBoundingClientRect();
+        return { el, top: r.top + y, bottom: r.bottom + y };
+      });
+      maxScroll = Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+    };
+
     let ticking = false;
     const update = () => {
       ticking = false;
-      const probe = 32; // meio do cabeçalho
-      const mid = window.innerHeight * 0.5;
+      const y = window.scrollY;
+      const mid = y + window.innerHeight * 0.5;
       let idx = 0;
-      els.forEach((el, i) => {
-        if (el.getBoundingClientRect().top <= mid) idx = i;
+      sceneTops.forEach((t, i) => {
+        if (t <= mid) idx = i;
       });
-      // o elemento mais interno sob o cabeçalho decide o tema
+      // o elemento mais interno sob o cabeçalho decide o tema (o atributo pode mudar via GSAP)
+      const probe = y + 32;
       let th: "dark" | "light" = "dark";
-      document.querySelectorAll<HTMLElement>("[data-header-theme]").forEach((el) => {
-        const r = el.getBoundingClientRect();
-        if (r.top <= probe && r.bottom > probe) th = el.dataset.headerTheme as "dark" | "light";
+      themeRanges.forEach((r) => {
+        if (r.top <= probe && r.bottom > probe) th = r.el.dataset.headerTheme as "dark" | "light";
       });
       setCurrent(idx);
       setTheme(th);
-      const max = document.documentElement.scrollHeight - window.innerHeight;
-      if (barRef.current) barRef.current.style.transform = `scaleX(${max > 0 ? window.scrollY / max : 0})`;
+      if (barRef.current) barRef.current.style.transform = `scaleX(${Math.min(1, y / maxScroll)})`;
     };
     const onScroll = () => {
       if (!ticking) {
@@ -43,12 +60,20 @@ export function Header() {
         requestAnimationFrame(() => requestAnimationFrame(update));
       }
     };
-    update();
+    const onRefresh = () => {
+      measure();
+      update();
+    };
+    onRefresh();
+    ScrollTrigger.addEventListener("refresh", onRefresh);
     window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll);
+    window.addEventListener("resize", onRefresh);
+    window.addEventListener("load", onRefresh);
     return () => {
+      ScrollTrigger.removeEventListener("refresh", onRefresh);
       window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
+      window.removeEventListener("resize", onRefresh);
+      window.removeEventListener("load", onRefresh);
     };
   }, []);
 
@@ -67,8 +92,8 @@ export function Header() {
       style={{ height: "var(--header-h)" }}
     >
       <div
-        className={`absolute inset-0 backdrop-blur-md transition-opacity duration-500 ${light ? "opacity-100" : "opacity-0"}`}
-        style={{ background: "rgba(233,237,240,0.86)" }}
+        className={`absolute inset-0 transition-opacity duration-500 ${light ? "opacity-100" : "opacity-0"}`}
+        style={{ background: "rgba(233,237,240,0.95)" }}
         aria-hidden="true"
       />
       <div

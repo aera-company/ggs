@@ -51,6 +51,7 @@ export function Platform() {
   useScrollScene(ref, (el, { desktop }) => {
     const img = el.querySelector("[data-pr-img]");
     const light = el.querySelector<HTMLElement>("[data-pr-light]");
+    const lightInner = el.querySelector<HTMLElement>("[data-pr-light-inner]");
     const scan = el.querySelector("[data-pr-scan]");
     const rings = gsap.utils.toArray<SVGElement>("[data-pr-ring]", el);
     const ticks = el.querySelector("[data-pr-ticks]");
@@ -65,8 +66,10 @@ export function Platform() {
     gsap.set(rings, { attr: { "stroke-dashoffset": 1 } });
     gsap.set(ticks, { autoAlpha: 0 });
     gsap.set(labels, { autoAlpha: 0, y: 8 });
-    gsap.set(light, { clipPath: "inset(0% 0% 100% 0%)" });
-    gsap.set(scan, { top: "0%", autoAlpha: 0 });
+    // wipe de cima para baixo só com transforms: a moldura desce e o conteúdo compensa
+    gsap.set(light, { yPercent: -100 });
+    gsap.set(lightInner, { yPercent: 100 });
+    gsap.set(scan, { y: 0, autoAlpha: 0 });
     gsap.set(wf, { attr: { "stroke-dashoffset": 1 } });
     gsap.set(head, { yPercent: 110 });
     gsap.set(sub, { autoAlpha: 0, y: 14 });
@@ -74,7 +77,7 @@ export function Platform() {
 
     const tl = gsap.timeline({
       defaults: { ease: "none" },
-      scrollTrigger: { trigger: el.querySelector(".pin-track"), start: "top top", end: "bottom bottom", scrub: 0.6 },
+      scrollTrigger: { trigger: el.querySelector(".pin-track"), start: "top top", end: "bottom bottom", scrub: 0.6, invalidateOnRefresh: true },
     });
 
     // 1. aproximação no aço
@@ -85,8 +88,9 @@ export function Platform() {
 
     // 2. varredura: o industrial vira interface
     tl.set(scan, { autoAlpha: 1 }, 0.34);
-    tl.to(scan, { top: "100%", duration: 0.24, ease: "power2.inOut" }, 0.34);
-    tl.to(light, { clipPath: "inset(0% 0% 0% 0%)", duration: 0.24, ease: "power2.inOut" }, 0.34);
+    tl.to(scan, { y: () => window.innerHeight, duration: 0.24, ease: "power2.inOut" }, 0.34);
+    tl.to(light, { yPercent: 0, duration: 0.24, ease: "power2.inOut" }, 0.34);
+    tl.to(lightInner, { yPercent: 0, duration: 0.24, ease: "power2.inOut" }, 0.34);
     tl.set(scan, { autoAlpha: 0 }, 0.58);
     tl.set(track, { attr: { "data-header-theme": "dark" } }, 0);
     tl.set(track, { attr: { "data-header-theme": "light" } }, 0.38);
@@ -103,7 +107,7 @@ export function Platform() {
   return (
     <section ref={ref} id="platform" className="scene" aria-label="03 · The platform" data-header-theme="light">
       {/* PORTAL REVEAL */}
-      <div className="pin-track bg-navy-deep" style={{ ["--track" as string]: 300 }} data-header-theme="light">
+      <div className="pin-track bg-navy-deep" style={{ ["--track" as string]: 190 }} data-header-theme="light">
         <div className="pin-stage rm-flow">
           <div className="absolute inset-0 overflow-hidden rm-hide" aria-hidden="true">
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -115,8 +119,9 @@ export function Platform() {
               alt=""
               loading="lazy"
               className="img-cover origin-[42%_58%]"
-              style={{ filter: "saturate(0.75) contrast(1.08) brightness(0.8)" }}
+
             />
+            <div className="absolute inset-0 bg-abyss/30" />
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_42%_58%,transparent_0%,rgba(3,10,18,0.35)_40%,rgba(3,10,18,0.85)_100%)]" />
 
             {/* camada técnica */}
@@ -161,7 +166,8 @@ export function Platform() {
           </div>
 
           {/* camada clara: a interface */}
-          <div data-pr-light className="absolute inset-0 bg-[var(--light-bg)] text-ui-ink rm-static" style={{ clipPath: "inset(0 0 0 0)" }}>
+          <div data-pr-light className="absolute inset-0 overflow-hidden rm-static">
+          <div data-pr-light-inner className="absolute inset-0 bg-[var(--light-bg)] text-ui-ink rm-static">
             <div
               className="absolute inset-0 opacity-60"
               style={{
@@ -190,8 +196,9 @@ export function Platform() {
               </div>
             </div>
           </div>
+          </div>
 
-          <div data-pr-scan className="pointer-events-none absolute inset-x-0 h-px bg-signal shadow-[0_0_24px_4px_rgba(58,169,210,0.6)] rm-hide" aria-hidden="true" />
+          <div data-pr-scan className="pointer-events-none absolute inset-x-0 top-0 h-px bg-signal shadow-[0_0_24px_4px_rgba(58,169,210,0.6)] rm-hide" aria-hidden="true" />
         </div>
       </div>
 

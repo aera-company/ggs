@@ -78,7 +78,7 @@ export function Epilogue() {
 
   return (
     <section ref={ref} id="next" data-header-theme="dark" className="scene bg-abyss" aria-label="07 · The next GAVEA">
-      <div className="pin-track" style={{ ["--track" as string]: 300 }}>
+      <div className="pin-track" style={{ ["--track" as string]: 200 }}>
         <div className="pin-stage rm-flow">
           <div data-ep-lines className="wrap absolute inset-0 flex flex-col justify-center gap-6 rm-static">
             <p data-ep-1 className="t-l max-w-[26ch] text-mist">
@@ -121,7 +121,7 @@ export function Epilogue() {
                   </p>
                   <p className="mt-4 text-[0.95rem] text-paper/90">Uma segunda conversa: como a GAVEA chega a 2030.</p>
                 </div>
-                <a data-ep-reveal href={BUILD2030_URL} target="_blank" rel="noopener noreferrer" className="btn-ghost self-start bg-abyss/40 backdrop-blur md:self-auto">
+                <a data-ep-reveal href={BUILD2030_URL} target="_blank" rel="noopener noreferrer" className="btn-ghost self-start bg-abyss/60 md:self-auto">
                   Conhecer BUILD 2030
                   <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true">
                     <path d="M3.5 2.5h6v6M9.5 2.5l-7 7" fill="none" stroke="currentColor" strokeWidth="1.3" />

@@ -256,7 +256,7 @@ export function GoToMarket() {
 
   return (
     <section ref={ref} id="acquisition" data-header-theme="dark" className="scene bg-navy-deep" aria-label="05 · Aquisição internacional">
-      <div className="pin-track" style={{ ["--track" as string]: 560 }}>
+      <div className="pin-track" style={{ ["--track" as string]: 340 }}>
         <div className="pin-stage rm-flow">
           <div className="wrap grid h-full grid-cols-1 content-center gap-6 pt-[calc(var(--header-h)+4vh)] pb-[5vh] md:grid-cols-[0.75fr_1.25fr] md:items-center md:gap-12 rm-static">
             {/* título + trilho */}

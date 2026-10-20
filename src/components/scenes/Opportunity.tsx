@@ -13,7 +13,7 @@ const BEATS = [
   },
   {
     k: "Uma solicitação",
-    t: "Um navio em Singapura precisa de tank cleaning. Quem coordena, contrata e responde pelo serviço?",
+    t: "O navio está em Singapura e os tanques precisam ser limpos. Quem coordena, contrata e responde pelo serviço?",
   },
   {
     k: "A tese",
@@ -26,8 +26,7 @@ export function Opportunity() {
 
   useScrollScene(ref, (el) => {
     const svg = el.querySelector("svg")!;
-    const stop = svg.querySelector("[data-reveal-stop]")!;
-    const edge = svg.querySelector("[data-reveal-edge]")!;
+    const dots = svg.querySelector("[data-dots]")!;
     const arcs = ROUTES.map((k) => svg.querySelector<SVGPathElement>(`[data-arc="${k}"]`)!);
     const ports = gsap.utils.toArray<SVGGElement>("[data-port]", svg);
     const pulse = svg.querySelector<SVGGElement>("[data-pulse]")!;
@@ -36,8 +35,7 @@ export function Opportunity() {
     const beats = gsap.utils.toArray<HTMLElement>("[data-beat]", el);
     const len = sgArc.getTotalLength();
 
-    gsap.set(stop, { attr: { offset: 0 } });
-    gsap.set(edge, { attr: { offset: 0.02 } });
+    gsap.set(dots, { opacity: 0 });
     gsap.set(arcs, { attr: { "stroke-dashoffset": 1 } });
     gsap.set(ports, { autoAlpha: 0 });
     gsap.set(beats.slice(1), { autoAlpha: 0, y: 16 });
@@ -56,8 +54,7 @@ export function Opportunity() {
       scrollTrigger: { trigger: el.querySelector(".pin-track"), start: "top top", end: "bottom bottom", scrub: 0.6 },
     });
 
-    tl.to(stop, { attr: { offset: 1 }, duration: 0.28, ease: "power1.in" }, 0.02);
-    tl.to(edge, { attr: { offset: 1 }, duration: 0.28, ease: "power1.in" }, 0.02);
+    tl.to(dots, { opacity: 1, duration: 0.2, ease: "power1.out" }, 0.02);
     tl.fromTo("[data-home-ring]", { attr: { r: 4 } }, { attr: { r: 14 }, duration: 0.1 }, 0.1);
 
     arcs.forEach((arc, i) => {
@@ -102,7 +99,7 @@ export function Opportunity() {
       style={{ background: "radial-gradient(120% 90% at 70% 40%, #0b2539 0%, #050f1a 55%, #030a12 100%)" }}
       aria-label="01 · A oportunidade"
     >
-      <div className="pin-track" style={{ ["--track" as string]: 340 }}>
+      <div className="pin-track" style={{ ["--track" as string]: 210 }}>
         <div className="pin-stage rm-flow">
           <div className="wrap relative flex h-full flex-col pt-[calc(var(--header-h)+5vh)] pb-[7vh] rm-static">
             <div className="relative z-10 flex items-start justify-between gap-8">
