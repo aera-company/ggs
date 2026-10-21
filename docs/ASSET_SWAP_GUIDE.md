@@ -39,6 +39,6 @@ Sem versão retrato, telas estreitas usam o modo estendido (imagem no alto, céu
 | `tankCleaning` | 02 etapa 3, 05 landing da jornada |
 | `thePeople` | 02 etapa 4 |
 | `serviceExecution` | 02 etapa 5 |
-| `build2030` | 07 |
+| `build2030` | 07 (poster da abertura do filme; o vídeo fica em `FilmTheater.tsx`) |
 
 O Portal Reveal posiciona os anéis técnicos sobre o flange do `industrialMacro`. Se esse asset mudar, ajuste `origin-[42%_58%]` e as coordenadas `672,522` em `Platform.tsx`.

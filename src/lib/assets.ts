@@ -80,12 +80,16 @@ export const ASSETS = {
     focalNarrow: { x: 0.35, y: 0.5 },
   },
   build2030: {
-    alt: "Frame do hero BUILD 2030: terminal portuário ao entardecer, visualização 3D da AERA.",
+    alt: "Abertura do filme GAVEA BUILD 2030: a Terra à noite, com uma linha de luz traçando o horizonte.",
     concept: false,
-    sources: [{ src: "/media/build2030-hero-frame.webp", w: 1440, h: 900 }],
-    focal: { x: 0.5, y: 0.5 },
-    focalNarrow: { x: 0.4, y: 0.5 },
+    sources: [
+      { src: "/media/build2030-film-poster-1080.webp", w: 1080, h: 608 },
+      { src: "/media/build2030-film-poster-1920.webp", w: 1920, h: 1080 },
+    ],
+    focal: { x: 0.55, y: 0.5 },
+    focalNarrow: { x: 0.62, y: 0.5 },
   },
+
 } satisfies Record<string, Asset>;
 
 export type AssetId = keyof typeof ASSETS;

@@ -267,6 +267,29 @@ body {
   transform: scale(0.97);
 }
 
+/* botão sólido (não herda o hover translúcido do btn-ghost) */
+.btn-solid {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: 44px;
+  padding: 0 1.15rem;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  background: var(--paper);
+  color: var(--navy);
+  transition:
+    background 0.25s var(--ease-out),
+    transform 0.2s var(--ease-out);
+}
+.btn-solid:hover {
+  background: #fff;
+}
+.btn-solid:active {
+  transform: scale(0.97);
+}
+
 /* ------------------------------------------------------------------
    Movimento reduzido: tudo legível, nada preso
    ------------------------------------------------------------------ */

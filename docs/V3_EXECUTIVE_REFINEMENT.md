@@ -43,3 +43,13 @@ npm run dev   # http://localhost:3040
 ```
 
 Calibração do hero: `http://localhost:3040/?rig`.
+
+## 7. Filme do BUILD 2030 no epílogo (21/10)
+
+- O frame 3D saiu. O horizonte agora se abre num **poster da abertura do próprio filme** (a Terra à noite), com o texto "AERA apresenta" removido só no poster.
+- **Preparação antes do vídeo:** frases de ponte → horizonte e 2026 → 2030 → "The next GAVEA · GAVEA BUILD 2030", a frase de contexto e "Antes de encerrar, um filme curto sobre essa segunda conversa". O botão "Assistir ao filme · 1 min 12 s · com som" é o único jeito de iniciar.
+- **Modo cinema:** o clique escurece a tela e o filme entra em fade. Como ele abre no escuro, não há corte. Controles: pausar, som, tela cheia (inclusive iPhone), barra de progresso clicável, fechar (Esc), e controles que somem com o mouse parado. O scroll da página fica travado enquanto o filme roda e volta para o mesmo ponto ao fechar.
+- **Fim:** cartão "Uma segunda conversa: como a GAVEA chega a 2030", com "Conhecer BUILD 2030", "Assistir de novo" e "Voltar à apresentação".
+- **Arquivos:** `public/media/build2030-film-1080.mp4` (25 MB) e `build2030-film-720.mp4` (8 MB), H.264 + AAC, com início rápido (faststart), gerados a partir do master de 122 MB. Notebooks e projetores recebem 1080p; celulares, 720p. O download começa em segundo plano quando o horizonte aparece, para o play ser imediato na reunião.
+- **Testado no motor do Safari** (desktop e iPhone): o áudio toca após o clique, o cartão final aparece, o Esc fecha, a rolagem e o foco voltam ao botão. Nenhum quadro longo a mais na rolagem.
+- **Pendente:** legendas (arquivo VTT) se o filme tiver locução e for exibido sem som.

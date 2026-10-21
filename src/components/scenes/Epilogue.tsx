@@ -1,10 +1,11 @@
 "use client";
 
-import { useRef } from "react";
+import { useCallback, useRef, useState } from "react";
 import { gsap } from "@/lib/gsap";
 import { RESET_EVENT } from "@/lib/scenes";
 import { useScrollScene } from "../motion/useScrollScene";
 import { useLenis } from "../motion/SmoothScroll";
+import { FilmTheater, type FilmHandle } from "../motion/FilmTheater";
 import { AssetImage } from "../ui/AssetImage";
 import { SplitWords } from "../ui/SplitWords";
 
@@ -14,6 +15,11 @@ const BUILD2030_URL = "https://build-2030.vercel.app";
 export function Epilogue() {
   const ref = useRef<HTMLElement>(null);
   const lenis = useLenis();
+  const film = useRef<FilmHandle | null>(null);
+  const [warm, setWarm] = useState(false);
+  const onFilmReady = useCallback((h: FilmHandle) => {
+    film.current = h;
+  }, []);
 
   useScrollScene(ref, (el) => {
     const l1 = el.querySelectorAll("[data-ep-1] .split-word > span");
@@ -35,7 +41,16 @@ export function Epilogue() {
 
     const tl = gsap.timeline({
       defaults: { ease: "none" },
-      scrollTrigger: { trigger: el.querySelector(".pin-track"), start: "top top", end: "bottom bottom", scrub: 0.6 },
+      scrollTrigger: {
+        trigger: el.querySelector(".pin-track"),
+        start: "top top",
+        end: "bottom bottom",
+        scrub: 0.6,
+        // a partir do horizonte, o filme começa a carregar em segundo plano
+        onUpdate: (self) => {
+          if (self.progress > 0.3) setWarm(true);
+        },
+      },
     });
 
     // 1. a ponte em duas frases
@@ -65,7 +80,7 @@ export function Epilogue() {
     tl.set(frame, { opacity: 1 }, 0.53);
     tl.to(frame, { clipPath: "inset(0% 0% 0% 0%)", duration: 0.16, ease: "power3.inOut" }, 0.53);
     tl.to(horizon, { autoAlpha: 0, duration: 0.05 }, 0.58);
-    tl.fromTo(img, { scale: 1.22 }, { scale: 1, duration: 0.4, ease: "power1.out" }, 0.53);
+    tl.fromTo(img, { scale: 1.18 }, { scale: 1.04, duration: 0.4, ease: "power1.out" }, 0.53);
     reveal.forEach((r, i) => tl.to(r, isLink(r) ? { autoAlpha: 1, y: 0, duration: 0.05 } : { opacity: 1, y: 0, duration: 0.05 }, 0.72 + i * 0.035));
     tl.to({}, { duration: 0.06 }, 0.94);
   });
@@ -103,10 +118,11 @@ export function Epilogue() {
 
           <div data-ep-frame className="absolute inset-0 overflow-hidden rm-static" style={{ minHeight: "100%" }}>
             <AssetImage id="build2030" data-ep-img />
-            <div className="absolute inset-0 bg-abyss/45" />
+            <div className="absolute inset-0 bg-abyss/40" />
             <div className="absolute inset-0 scrim-b" />
+            <div className="absolute inset-0 scrim-l opacity-60" />
 
-            <div className="wrap absolute inset-x-0 bottom-[10vh] rm-static">
+            <div className="wrap absolute inset-x-0 bottom-[9vh] rm-static">
               <p data-ep-reveal className="t-label mb-6 text-paper/80">
                 The next GAVEA
               </p>
@@ -114,25 +130,44 @@ export function Epilogue() {
                 GAVEA BUILD 2030
               </h2>
               <div className="mt-8 flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
-                <div data-ep-reveal>
+                <div data-ep-reveal className="max-w-[46ch]">
                   <p className="t-m text-paper">One GAVEA. One Direction.</p>
                   <p className="t-body mt-3 text-mist">
                     Uma visão independente da AERA para posicionamento, comunicação, marketing e tecnologia da próxima fase da GAVEA.
                   </p>
-                  <p className="mt-4 text-[0.95rem] text-paper/90">Uma segunda conversa: como a GAVEA chega a 2030.</p>
+                  <p className="mt-4 text-[1rem] text-paper/90">Antes de encerrar, um filme curto sobre essa segunda conversa.</p>
                 </div>
-                <a data-ep-reveal href={BUILD2030_URL} target="_blank" rel="noopener noreferrer" className="btn-ghost self-start bg-abyss/60 md:self-auto">
-                  Conhecer BUILD 2030
-                  <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true">
-                    <path d="M3.5 2.5h6v6M9.5 2.5l-7 7" fill="none" stroke="currentColor" strokeWidth="1.3" />
-                  </svg>
-                  <span className="sr-only">(abre em nova aba)</span>
-                </a>
+                <div data-ep-reveal className="flex flex-col items-start gap-3 md:items-end">
+                  <button
+                    type="button"
+                    onClick={(e) => film.current?.open(e.currentTarget)}
+                    className="group inline-flex min-h-[56px] items-center gap-4 rounded-full bg-paper py-2 pl-2 pr-6 text-navy transition-transform active:scale-[0.98]"
+                  >
+                    <span className="grid size-10 place-items-center rounded-full bg-navy text-paper transition-transform group-hover:scale-105">
+                      <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
+                        <path d="M4 2.5v9l7.5-4.5z" fill="currentColor" />
+                      </svg>
+                    </span>
+                    <span className="text-left">
+                      <span className="block text-[1rem] font-medium leading-tight">Assistir ao filme</span>
+                      <span className="block text-[0.78rem] text-navy/70">1 min 12 s · com som</span>
+                    </span>
+                  </button>
+                  <a href={BUILD2030_URL} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-[44px] items-center gap-2 px-2 text-[0.9rem] text-paper/85 underline-offset-4 hover:underline">
+                    Conhecer BUILD 2030
+                    <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true">
+                      <path d="M3.5 2.5h6v6M9.5 2.5l-7 7" fill="none" stroke="currentColor" strokeWidth="1.3" />
+                    </svg>
+                    <span className="sr-only">(abre em nova aba)</span>
+                  </a>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
+
+      <FilmTheater warm={warm} url={BUILD2030_URL} onReady={onFilmReady} />
 
       <footer className="relative border-t border-paper/10 bg-abyss">
         <div className="wrap flex flex-col gap-10 py-14 md:flex-row md:items-end md:justify-between md:py-16">
