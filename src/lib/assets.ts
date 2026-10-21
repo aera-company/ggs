@@ -37,16 +37,18 @@ export type HeroRig = {
   superstructure: { x0: number; x1: number; y0: number; y1: number };
 };
 
-const pair = (name: string, ratio = 1080 / 1920): ImageSource[] => [
-  { src: `/media/${name}-1080.webp`, w: 1080, h: Math.round(1080 * ratio) },
-  { src: `/media/${name}-1920.webp`, w: 1920, h: Math.round(1920 * ratio) },
-];
+/** Variantes paisagem por largura. Para um master 4K: variants("hero-vessel", [1080, 1920, 3840]). */
+const variants = (name: string, widths: number[], ratio = 1080 / 1920): ImageSource[] =>
+  widths.map((w) => ({ src: `/media/${name}-${w}.webp`, w, h: Math.round(w * ratio) }));
+const pair = (name: string) => variants(name, [1080, 1920]);
 
 export const ASSETS = {
   heroVessel: {
     alt: "Navio-tanque em mar aberto ao entardecer. Imagem conceitual.",
     concept: true,
     sources: pair("hero-vessel"),
+    // Master nativo (ver docs/HERO_MASTER_SPEC.md):
+    // sources: variants("hero-vessel", [1080, 1920, 3840]),
     // portrait: { src: "/media/hero-vessel-portrait.webp", w: 2160, h: 3840 },
     focal: { x: 0.395, y: 0.56 },
   },
@@ -97,4 +99,6 @@ export const HERO_RIG: HeroRig = {
 
 export const srcSet = (a: Asset) => a.sources.map((s) => `${s.src} ${s.w}w`).join(", ");
 export const largest = (a: Asset) => a.sources[a.sources.length - 1];
+/** Menor variante que cobre a largura pedida (evita subir textura 4K num celular). */
+export const pickSource = (a: Asset, minWidth: number) => a.sources.find((s) => s.w >= minWidth) ?? largest(a);
 export const pct = (f: Focal) => `${f.x * 100}% ${f.y * 100}%`;

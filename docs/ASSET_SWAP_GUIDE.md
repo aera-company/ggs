@@ -26,7 +26,7 @@ O shader do hero usa o `HERO_RIG`, em coordenadas da imagem (0 a 1, y a partir d
 | `hull` | trapézio do casco: `top`/`bottom` em y, `l0`/`r0` no topo e `l1`/`r1` na base (a água não ondula aqui) |
 | `superstructure` | retângulo da superestrutura acima do horizonte (as nuvens não derivam aqui) |
 
-Com um hero novo, abra a imagem num editor, anote esses pontos e atualize o rig. Para a versão retrato, passe `rigPortrait` ao `HeroCanvas` se a composição for diferente.
+Com um hero novo, abra `http://localhost:3040/?rig`: a sobreposição mostra casco (vermelho), superestrutura (laranja), horizonte (ciano) e foco (cruz branca). Ajuste o rig até encaixar. Especificação completa em `HERO_MASTER_SPEC.md`. Para a versão retrato, passe `rigPortrait` ao `HeroCanvas` se a composição for diferente.
 
 Sem versão retrato, telas estreitas usam o modo estendido (imagem no alto, céu e mar gerados pelo shader). Com versão retrato, ela é usada em cover.
 

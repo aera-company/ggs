@@ -15,12 +15,11 @@ const PORTS = [
   { k: "Fujairah", x: 532, y: 378, tags: ["documentos", "homologação"] },
 ];
 
-const BENEFITS = [
-  "Um único responsável comercial",
-  "Escopo qualificado antes da proposta",
-  "Parceiros homologados, sem leilão",
-  "Uma relação contratual, com a GAVEA",
-  "Acompanhamento e documentos em um só lugar",
+// o diferencial central, em três papéis (repetidos no diagrama)
+const ROLES = [
+  { k: "Contraparte comercial", t: "O cliente contrata a GAVEA. Uma proposta, uma relação, um responsável." },
+  { k: "Coordena a operação", t: "Escopo, prazos, documentos e acompanhamento ficam com a GAVEA." },
+  { k: "Contrata parceiros locais", t: "Quando necessário, aciona um parceiro qualificado para executar no porto." },
 ];
 
 // curvas cruzadas para o "contratar sozinho": parecem emaranhadas de propósito
@@ -45,6 +44,7 @@ export function Advantage() {
     const phaseA = el.querySelector("[data-adv-a]");
     const phaseB = el.querySelector("[data-adv-b]");
     const items = gsap.utils.toArray<HTMLElement>("[data-adv-item]", el);
+    const roles = gsap.utils.toArray<SVGTextElement>("[data-adv-role]", el);
 
     gsap.set([...solo, ...via], { attr: { "stroke-dashoffset": 1 } });
     gsap.set(trunk, { attr: { "stroke-dashoffset": 1 } });
@@ -53,6 +53,7 @@ export function Advantage() {
     gsap.set(roleB, { autoAlpha: 0 });
     gsap.set(phaseB, { autoAlpha: 0, y: 20 });
     gsap.set(items, { autoAlpha: 0, x: -12 });
+    gsap.set(roles, { autoAlpha: 0 });
 
     gsap.from(el.querySelectorAll("[data-adv-title] .split-word > span"), {
       yPercent: 110,
@@ -82,7 +83,11 @@ export function Advantage() {
     tl.to(roleB, { autoAlpha: 1, duration: 0.04 }, 0.6);
     tl.to(picked, { autoAlpha: 1, duration: 0.05 }, 0.68);
     tl.to(phaseB, { autoAlpha: 1, y: 0, duration: 0.06 }, 0.5);
-    items.forEach((it, i) => tl.to(it, { autoAlpha: 1, x: 0, duration: 0.04 }, 0.6 + i * 0.05));
+    // cada papel acende no texto e no diagrama ao mesmo tempo
+    items.forEach((it, i) => {
+      tl.to(it, { autoAlpha: 1, x: 0, duration: 0.04 }, 0.6 + i * 0.08);
+      tl.to(roles[i], { autoAlpha: 1, duration: 0.04 }, 0.6 + i * 0.08);
+    });
     tl.to({}, { duration: 0.06 }, 0.94);
   });
 
@@ -104,7 +109,7 @@ export function Advantage() {
                 <SplitWords text="Um responsável no lugar de muitos." />
               </h2>
 
-              <div className="relative mt-8 min-h-[13.5rem] md:min-h-[16rem]">
+              <div className="relative mt-6 min-h-[9.5rem] md:mt-8 md:min-h-[16rem]">
                 <div data-adv-a className="absolute inset-x-0 top-0 rm-static">
                   <p className="t-label mb-3 text-[#e4a66b]">Contratar sozinho</p>
                   <p className="t-m text-mist">
@@ -113,16 +118,17 @@ export function Advantage() {
                 </div>
                 <div data-adv-b className="absolute inset-x-0 top-0 rm-static rm-visible">
                   <p className="t-label mb-4 text-signal">Contratar pela GAVEA</p>
-                  <ul className="grid gap-2.5">
-                    {BENEFITS.map((b) => (
-                      <li key={b} data-adv-item className="flex items-start gap-3 text-[1.02rem] text-paper rm-visible">
-                        <svg width="16" height="16" viewBox="0 0 16 16" className="mt-1 shrink-0 text-signal" aria-hidden="true">
-                          <path d="M3 8.4 6.4 11.6 13 4.6" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                        {b}
+                  <ol className="grid gap-2.5 md:gap-4">
+                    {ROLES.map((r, i) => (
+                      <li key={r.k} data-adv-item className="grid grid-cols-[28px_1fr] items-baseline rm-visible">
+                        <span className="font-mono text-[0.8rem] text-signal">{i + 1}</span>
+                        <span>
+                          <span className="block text-[1.15rem] font-medium leading-snug text-paper md:text-[1.25rem]">{r.k}</span>
+                          <span className="mt-0.5 hidden text-[0.92rem] leading-relaxed text-mist md:block">{r.t}</span>
+                        </span>
                       </li>
                     ))}
-                  </ul>
+                  </ol>
                 </div>
               </div>
             </div>
@@ -130,7 +136,7 @@ export function Advantage() {
             <div className="relative row-start-2 flex min-h-0 items-center md:row-start-1 md:col-start-2">
               <svg
                 viewBox="0 0 640 440"
-                className="h-full max-h-[64vh] w-full"
+                className="adv-svg h-full max-h-[64vh] w-full"
                 role="img"
                 aria-label="Comparação: sozinho, o cliente coordena quatro fornecedores em portos diferentes, cada um com contrato, seguro, idioma e cobrança próprios. Pela GAVEA, o cliente tem uma única relação, e a GAVEA aciona o parceiro homologado adequado."
               >
@@ -157,7 +163,7 @@ export function Advantage() {
                     return (
                       <g key={`${p.k}-${t}`} data-adv-tag transform={`translate(${x} ${y})`}>
                         <rect x={-t.length * 3.6 - 10} y="-11" width={t.length * 7.2 + 20} height="22" rx="11" fill="#1a1410" stroke="#e4a66b" strokeOpacity="0.6" />
-                        <text y="4" textAnchor="middle" fill="#f0c9a4" style={{ font: "500 11.5px var(--font-geist-mono)" }}>
+                        <text y="4" textAnchor="middle" fill="#f0c9a4" className="adv-tag" style={{ font: "500 11.5px var(--font-geist-mono)" }}>
                           {t}
                         </text>
                       </g>
@@ -178,13 +184,22 @@ export function Advantage() {
                 <g data-adv-hub transform={`translate(${GAVEA.x} ${GAVEA.y})`}>
                   <circle r="44" fill="#3aa9d2" fillOpacity="0.12" />
                   <circle r="30" fill="#030a12" stroke="#3aa9d2" strokeWidth="2" />
-                  <text y="5" textAnchor="middle" className="fill-paper" style={{ font: "600 12px var(--font-geist-mono)", letterSpacing: "0.08em" }}>
+                  <text y="5" textAnchor="middle" className="adv-tag fill-paper" style={{ font: "600 12px var(--font-geist-mono)", letterSpacing: "0.08em" }}>
                     GAVEA
                   </text>
-                  <text y="64" textAnchor="middle" fill="#3aa9d2" style={{ font: "500 12px var(--font-geist-mono)", letterSpacing: "0.06em" }}>
-                    UM RESPONSÁVEL
-                  </text>
                 </g>
+
+                {/* os três papéis, ancorados no diagrama */}
+                <text data-adv-role x={(CLIENT.x + GAVEA.x) / 2} y={CLIENT.y - 30} textAnchor="middle" fill="#f3f1ec" className="adv-lbl" style={{ fontFamily: "var(--font-geist-mono)", fontWeight: 500, letterSpacing: "0.06em" }}>
+                  1 · CONTRAPARTE
+                </text>
+                <text data-adv-role x={GAVEA.x} y={GAVEA.y + 64} textAnchor="middle" fill="#3aa9d2" className="adv-lbl" style={{ fontFamily: "var(--font-geist-mono)", fontWeight: 500, letterSpacing: "0.06em" }}>
+                  2 · COORDENA
+                </text>
+                <text data-adv-role x={450} y={414} textAnchor="middle" fill="#9cc9dc" className="adv-lbl" style={{ fontFamily: "var(--font-geist-mono)", fontWeight: 500, letterSpacing: "0.06em" }}>
+                  <tspan x={450}>3 · PARCEIROS LOCAIS,</tspan>
+                  <tspan x={450} dy="1.25em">QUANDO NECESSÁRIO</tspan>
+                </text>
 
                 {/* portos */}
                 {PORTS.map((p, i) => (
@@ -196,10 +211,10 @@ export function Advantage() {
                     <text x="-16" y="-14" textAnchor="end" className="fill-paper" style={{ font: "500 12px var(--font-geist-mono)", letterSpacing: "0.05em" }}>
                       {p.k.toUpperCase()}
                     </text>
-                    <text data-adv-role-a x="-16" y="4" textAnchor="end" className="fill-faint rm-hide" style={{ font: "400 12px var(--font-archivo)" }}>
+                    <text data-adv-role-a x="-16" y="4" textAnchor="end" className="adv-sub fill-faint rm-hide" style={{ font: "400 12px var(--font-archivo)" }}>
                       Fornecedor {i + 1}
                     </text>
-                    <text data-adv-role-b x="-16" y="4" textAnchor="end" fill="#9cc9dc" style={{ font: "400 12px var(--font-archivo)" }}>
+                    <text data-adv-role-b x="-16" y="4" textAnchor="end" fill="#9cc9dc" className="adv-sub" style={{ font: "400 12px var(--font-archivo)" }}>
                       {i === 0 ? "Parceiro acionado" : "Parceiro homologado"}
                     </text>
                   </g>

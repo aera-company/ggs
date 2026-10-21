@@ -331,6 +331,10 @@ body {
   .rm-tall {
     min-height: 380px;
   }
+  .rm-h-auto {
+    height: auto !important;
+    overflow: visible !important;
+  }
 }
 
 /* ponto focal vindo do registro de assets (src/lib/assets.ts) */
@@ -380,4 +384,21 @@ body {
   box-shadow:
     0 0 0 2px var(--ui-accent),
     0 0 0 8px rgba(0, 107, 144, 0.12);
+}
+
+/* rótulos do diagrama "Por que pela GAVEA": maiores em telas estreitas, onde o SVG encolhe */
+.adv-lbl {
+  font-size: 12px;
+}
+@media (max-width: 899px) {
+  .adv-lbl {
+    font-size: 21px;
+  }
+  .adv-svg text:not(.adv-tag):not(.adv-lbl) {
+    font-size: 21px !important;
+  }
+  /* legendas secundárias dos portos saem no celular para os rótulos principais crescerem */
+  .adv-svg .adv-sub {
+    display: none;
+  }
 }

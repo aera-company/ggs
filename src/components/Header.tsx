@@ -97,8 +97,8 @@ export function Header() {
         aria-hidden="true"
       />
       <div
-        className={`absolute inset-0 transition-opacity duration-500 ${light ? "opacity-0" : "opacity-100"}`}
-        style={{ background: "linear-gradient(to bottom, rgba(3,10,18,0.72), rgba(3,10,18,0))" }}
+        className={`absolute inset-x-0 top-0 h-[calc(100%+28px)] transition-opacity duration-500 ${light ? "opacity-0" : "opacity-100"}`}
+        style={{ background: "linear-gradient(to bottom, rgba(3,10,18,0.94) 0%, rgba(3,10,18,0.88) 62%, rgba(3,10,18,0) 100%)" }}
         aria-hidden="true"
       />
       <div className="wrap relative flex h-full items-center justify-between gap-4">

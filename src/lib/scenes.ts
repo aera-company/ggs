@@ -5,6 +5,7 @@ export const SCENES = [
   { id: "opportunity", n: "01", label: "A oportunidade", theme: "dark" },
   { id: "model", n: "02", label: "Cadeia de valor", theme: "dark" },
   { id: "advantage", n: "02", label: "Por que pela GAVEA", theme: "dark" },
+  { id: "scale", n: "02", label: "Escala", theme: "dark" },
   { id: "platform", n: "03", label: "The platform", theme: "light" },
   { id: "why", n: "04", label: "Por que o portal", theme: "light" },
   { id: "acquisition", n: "05", label: "Novos clientes", theme: "dark" },

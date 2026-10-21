@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type MutableRefObject } from "react";
-import { largest, type Asset, type HeroRig } from "@/lib/assets";
+import { largest, pickSource, srcSet, type Asset, type HeroRig } from "@/lib/assets";
 
 /**
  * Hero cinematográfico em WebGL puro (sem three.js: ~0 kB de dependência).
@@ -44,6 +44,7 @@ uniform vec2 uFocus;
 uniform vec4 uHull;     // top, bottom, l0, r0
 uniform vec2 uHull2;    // l1, r1
 uniform vec4 uSuper;    // x0, x1, y0, y1
+uniform float uDebug;   // ?rig na URL: mostra as máscaras para calibrar um hero novo
 varying vec2 vUv;
 
 float hash(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
@@ -155,6 +156,17 @@ void main() {
   // grão
   col += (hash(uv * uRes + fract(uTime * 7.0) * 91.0) - 0.5) * 0.05;
 
+  // calibração do rig: casco (vermelho), superestrutura (laranja), horizonte (ciano), foco (branco)
+  if (uDebug > 0.5) {
+    col = mix(col, vec3(1.0, 0.15, 0.2), hull * 0.35);
+    col = mix(col, vec3(1.0, 0.6, 0.1), superS * 0.45);
+    float hl = 1.0 - smoothstep(0.0, 0.002, abs(iuv.y - horizon));
+    col = mix(col, vec3(0.2, 0.9, 1.0), hl);
+    vec2 fd = abs(iuv - focus);
+    float cross = (1.0 - smoothstep(0.0, 0.0015, fd.x)) * step(fd.y, 0.03) + (1.0 - smoothstep(0.0, 0.0025, fd.y)) * step(fd.x, 0.02);
+    col = mix(col, vec3(1.0), clamp(cross, 0.0, 1.0));
+  }
+
   gl_FragColor = vec4(col, 1.0);
 }`;
 
@@ -237,12 +249,18 @@ export function HeroCanvas({ asset, rig, rigPortrait, progressRef }: Props) {
       hull: gl.getUniformLocation(prog, "uHull"),
       hull2: gl.getUniformLocation(prog, "uHull2"),
       sup: gl.getUniformLocation(prog, "uSuper"),
+      debug: gl.getUniformLocation(prog, "uDebug"),
     };
+    // ?rig: sobreposição de calibração e progresso de scroll congelado em 0
+    const debug = new URLSearchParams(window.location.search).has("rig");
+    gl.uniform1f(u.debug, debug ? 1 : 0);
 
     // versão retrato só quando existe e a tela é estreita
     const narrow = window.innerWidth / window.innerHeight < 0.75;
     const usePortrait = !!asset.portrait && narrow;
-    const src = usePortrait ? asset.portrait!.src : largest(asset).src;
+    // textura do tamanho da tela (com folga para o dolly de até 1.3x)
+    const need = window.innerWidth * Math.min(window.devicePixelRatio || 1, 2) * 1.3;
+    const src = usePortrait ? asset.portrait!.src : pickSource(asset, Math.min(need, 3840)).src;
     const r = usePortrait && rigPortrait ? rigPortrait : rig;
     gl.uniform1f(u.horizon, r.horizon);
     gl.uniform2f(u.focus, r.focus.x, r.focus.y);
@@ -309,7 +327,7 @@ export function HeroCanvas({ asset, rig, rigPortrait, progressRef }: Props) {
       if (!visible) return;
       if (ready) {
         const t = (now - start) / 1000;
-        smoothProg += (progressRef.current - smoothProg) * 0.12;
+        smoothProg += ((debug ? 0 : progressRef.current) - smoothProg) * 0.12;
         mouse.x += (mouse.tx - mouse.x) * 0.04;
         mouse.y += (mouse.ty - mouse.y) * 0.04;
         const reveal = Math.min(1, t / 2.2);
@@ -345,6 +363,8 @@ export function HeroCanvas({ asset, rig, rigPortrait, progressRef }: Props) {
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={fallbackSrc}
+        srcSet={srcSet(asset)}
+        sizes="100vw"
         alt={mode === "static" ? alt : ""}
         aria-hidden={mode === "static" ? undefined : true}
         fetchPriority="high"

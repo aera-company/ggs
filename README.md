@@ -13,7 +13,7 @@ npm run dev   # http://localhost:3040
 
 ```
 src/app/                  layout, tokens (globals.css), fontes OFL
-src/components/scenes/    as cenas (ColdOpen … Epilogue), incluindo Advantage (V2)
+src/components/scenes/    as cenas (ColdOpen … Epilogue), incluindo Advantage (V2) e Scale (V3)
 src/components/motion/    HeroCanvas (WebGL), WorldMap, Lenis+GSAP, hook de cena
 src/components/portal/    protótipo do portal: tipos, dados demo, reducer, 3 visões
 src/data/world-dots.json  malha do mapa (gerada por scripts/gen-map.mjs)
@@ -34,5 +34,7 @@ docs/                     conceito, roteiro, auditorias, validação, revisão c
 - `docs/V2_REFINEMENT.md`: o que mudou na V2.
 - `docs/V2_PENDING_ASSETS_AND_APIS.md`: o que depende de novos assets, vídeos ou APIs pagas.
 - `docs/ASSET_SWAP_GUIDE.md`: como trocar imagens pelo registro `src/lib/assets.ts`.
+- `docs/HERO_MASTER_SPEC.md`: especificação do master do hero e calibração com `?rig`.
+- `docs/V3_EXECUTIVE_REFINEMENT.md`: o que mudou na V3 (escala, diferencial, piloto).
 
 Sem deploy. Publicação somente com autorização.
