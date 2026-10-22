@@ -44,6 +44,7 @@ uniform vec2 uFocus;
 uniform vec4 uHull;     // top, bottom, l0, r0
 uniform vec2 uHull2;    // l1, r1
 uniform vec4 uSuper;    // x0, x1, y0, y1
+uniform float uSkyDrift;
 uniform float uDebug;   // ?rig na URL: mostra as máscaras para calibrar um hero novo
 varying vec2 vUv;
 
@@ -100,7 +101,7 @@ void main() {
 
   // céu: deriva lenta das nuvens, sem tocar a superestrutura
   float sky = 1.0 - smoothstep(horizon - 0.05, horizon - 0.008, iuv.y);
-  disp.x += sky * (1.0 - superS) * (noise(vec2(iuv.y * 7.0, uTime * 0.06)) - 0.5) * 0.007;
+  disp.x += sky * uSkyDrift * (1.0 - superS) * (noise(vec2(iuv.y * 7.0, uTime * 0.06)) - 0.5) * 0.007;
 
   vec2 suv = iuv + disp;
   vec2 ca = (uv - 0.5) * 0.0035 * length(uv - 0.5);
@@ -188,6 +189,10 @@ type Props = {
   /** rig da versão retrato, se ela existir e tiver outra composição */
   rigPortrait?: HeroRig;
   progressRef: MutableRefObject<number>;
+  /** sempre "cover", sem o modo retrato estendido (para masters de alta resolução) */
+  cover?: boolean;
+  /** quando false, o canvas não desenha (algo opaco está cobrindo o hero) */
+  activeRef?: MutableRefObject<boolean>;
 };
 
 /** Largura da imagem, em larguras de tela, no modo retrato estendido. */
@@ -196,7 +201,7 @@ function extendK(aspect: number) {
   return 1.6 + (1.15 - 1.6) * t;
 }
 
-export function HeroCanvas({ asset, rig, rigPortrait, progressRef }: Props) {
+export function HeroCanvas({ asset, rig, rigPortrait, progressRef, cover = false, activeRef }: Props) {
   const alt = asset.alt;
   const fallbackSrc = largest(asset).src;
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -249,6 +254,7 @@ export function HeroCanvas({ asset, rig, rigPortrait, progressRef }: Props) {
       hull: gl.getUniformLocation(prog, "uHull"),
       hull2: gl.getUniformLocation(prog, "uHull2"),
       sup: gl.getUniformLocation(prog, "uSuper"),
+      skyDrift: gl.getUniformLocation(prog, "uSkyDrift"),
       debug: gl.getUniformLocation(prog, "uDebug"),
     };
     // ?rig: sobreposição de calibração e progresso de scroll congelado em 0
@@ -267,6 +273,7 @@ export function HeroCanvas({ asset, rig, rigPortrait, progressRef }: Props) {
     gl.uniform4f(u.hull, r.hull.top, r.hull.bottom, r.hull.l0, r.hull.r0);
     gl.uniform2f(u.hull2, r.hull.l1, r.hull.r1);
     gl.uniform4f(u.sup, r.superstructure.x0, r.superstructure.x1, r.superstructure.y0, r.superstructure.y1);
+    gl.uniform1f(u.skyDrift, r.skyDrift ?? 1);
 
     let start = performance.now();
     let raf = 0;
@@ -325,7 +332,7 @@ export function HeroCanvas({ asset, rig, rigPortrait, progressRef }: Props) {
     const frame = (now: number) => {
       raf = 0;
       if (!visible) return;
-      if (ready) {
+      if (ready && (!activeRef || activeRef.current)) {
         const t = (now - start) / 1000;
         smoothProg += ((debug ? 0 : progressRef.current) - smoothProg) * 0.12;
         mouse.x += (mouse.tx - mouse.x) * 0.04;
@@ -338,7 +345,7 @@ export function HeroCanvas({ asset, rig, rigPortrait, progressRef }: Props) {
         gl.uniform2f(u.mouse, mouse.x, mouse.y);
         gl.uniform1f(u.reveal, 1 - Math.pow(1 - reveal, 3));
         const aspect = canvas.width / canvas.height;
-        const ext = !usePortrait && aspect < 1.2;
+        const ext = !cover && !usePortrait && aspect < 1.2;
         gl.uniform1f(u.extend, ext ? 1 : 0);
         gl.uniform1f(u.k, extendK(aspect));
         gl.uniform1f(u.top, 0.17);
@@ -355,7 +362,7 @@ export function HeroCanvas({ asset, rig, rigPortrait, progressRef }: Props) {
       window.removeEventListener("pointermove", onMove);
       gl.getExtension("WEBGL_lose_context")?.loseContext();
     };
-  }, [asset, rig, rigPortrait, progressRef]);
+  }, [asset, rig, rigPortrait, progressRef, cover, activeRef]);
 
   return (
     <div className="absolute inset-0 bg-abyss">
@@ -368,7 +375,7 @@ export function HeroCanvas({ asset, rig, rigPortrait, progressRef }: Props) {
         alt={mode === "static" ? alt : ""}
         aria-hidden={mode === "static" ? undefined : true}
         fetchPriority="high"
-        className="hero-poster"
+        className={cover ? "hero-poster is-cover" : "hero-poster"}
         style={{ ["--fx" as string]: rig.focus.x, filter: "brightness(0.78) saturate(0.9)" }}
       />
       <canvas

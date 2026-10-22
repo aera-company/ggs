@@ -392,6 +392,98 @@ body {
   }
 }
 
+/* poster em "cover" para masters de alta resolução (sem modo estendido) */
+.hero-poster.is-cover {
+  object-position: calc(var(--fx, 0.4) * 100%) 50%;
+}
+@media (max-aspect-ratio: 6/5) {
+  .hero-poster.is-cover {
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    -webkit-mask-image: none;
+    mask-image: none;
+  }
+}
+
+/*
+ * Abertura em sequência: cada imagem é uma "placa" em cover com ponto focal,
+ * dimensionada em CSS para a rede SVG (mesmo viewBox) cair exatamente sobre ela.
+ * Só transform e opacity são animados (Safari).
+ */
+.seq-plate {
+  --ar: 1.7917;
+  --pw: max(100vw, calc(100svh * var(--ar)));
+  position: absolute;
+  width: var(--pw);
+  height: calc(var(--pw) / var(--ar));
+  left: calc((100vw - var(--pw)) * var(--fx, 0.5));
+  top: calc((100svh - var(--pw) / var(--ar)) * var(--fy, 0.5));
+  will-change: transform, opacity;
+}
+.seq-plate > img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+}
+.seq-flash {
+  background: radial-gradient(ellipse 70% 60% at 50% 55%, rgba(255, 214, 160, 0.95) 0%, rgba(242, 170, 92, 0.6) 40%, rgba(120, 70, 30, 0.15) 75%, rgba(3, 10, 18, 0) 100%);
+  opacity: 0;
+  will-change: opacity;
+}
+.seq-arc,
+.seq-arc-halo,
+.seq-pulse {
+  fill: none;
+  stroke-linecap: round;
+}
+.seq-arc {
+  stroke: #f3c27c;
+  stroke-width: 2.6;
+  stroke-opacity: 0.85;
+  stroke-dasharray: 1 1;
+  stroke-dashoffset: 1;
+}
+.seq-arc-halo {
+  stroke: #f0a85a;
+  stroke-width: 10;
+  stroke-opacity: 0.12;
+  stroke-dasharray: 1 1;
+  stroke-dashoffset: 1;
+}
+.seq-pulse {
+  stroke: #fff2dc;
+  stroke-width: 3.6;
+  stroke-dasharray: 0.06 0.94;
+  opacity: 0;
+  animation: seq-pulse 3.2s linear infinite;
+  animation-play-state: paused;
+}
+.seq-network.is-live .seq-pulse {
+  animation-play-state: running;
+}
+@keyframes seq-pulse {
+  from { stroke-dashoffset: 0.06; }
+  to { stroke-dashoffset: -0.94; }
+}
+.seq-hub-ring {
+  fill: none;
+  stroke: #ffd9a3;
+  stroke-width: 2;
+  transform-box: fill-box;
+  transform-origin: center;
+  opacity: 0;
+}
+.seq-network.is-live .seq-hub-ring {
+  animation: seq-ring 2.8s var(--ease-out, ease-out) infinite;
+}
+@keyframes seq-ring {
+  0% { transform: scale(0.6); opacity: 0.7; }
+  100% { transform: scale(3.2); opacity: 0; }
+}
+
 /* tour guiado: destaque da área do passo atual */
 [data-tour] {
   transition: box-shadow 0.4s var(--ease-out);

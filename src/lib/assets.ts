@@ -35,6 +35,8 @@ export type HeroRig = {
   /** casco como trapézio: topo/base em y, limites esquerdo/direito no topo e na base */
   hull: { top: number; bottom: number; l0: number; r0: number; l1: number; r1: number };
   superstructure: { x0: number; x1: number; y0: number; y1: number };
+  /** deriva das nuvens acima do horizonte (1 = padrão, 0 = céu parado) */
+  skyDrift?: number;
 };
 
 /** Variantes paisagem por largura. Para um master 4K: variants("hero-vessel", [1080, 1920, 3840]). */
@@ -91,6 +93,29 @@ export const ASSETS = {
   },
 
 } satisfies Record<string, Asset>;
+
+/**
+ * Abertura em sequência (protótipo, 22/10): imagens paradas com movimento e rede
+ * em código. Masters 2752 × 1536 gerados no Higgsfield (pack em
+ * human-output/image/ggs-hero-sequence). Spec: docs/HERO_SEQUENCE_MASTER_SPEC.md
+ */
+const seq = (name: string) => variants(name, [1376, 1920, 2752], 1536 / 2752);
+export const SEQ = {
+  globe: { alt: "A Terra à noite vista da órbita, com o Brasil iluminado. Imagem conceitual.", concept: true, sources: seq("seq-globe"), focal: { x: 0.32, y: 0.6 } },
+  rio: { alt: "Baía de Guanabara ao pôr do sol, com o Pão de Açúcar e o porto. Imagem conceitual.", concept: true, sources: seq("seq-rio"), focal: { x: 0.55, y: 0.6 } },
+  port: { alt: "Navio-tanque atracado no porto do Rio, visto do alto. Imagem conceitual.", concept: true, sources: seq("seq-port"), focal: { x: 0.64, y: 0.5 } },
+  dock: { alt: "Navio-tanque atracado ao entardecer, visto da água. Imagem conceitual.", concept: true, sources: seq("seq-dock"), focal: { x: 0.45, y: 0.45 } },
+  vessel: { alt: "Proa de um navio-tanque atracado ao entardecer. Imagem conceitual.", concept: true, sources: seq("seq-vessel"), focal: { x: 0.3, y: 0.45 } },
+} satisfies Record<string, Asset>;
+
+/** Rig do master final da sequência (seq-vessel): navio inteiro acima da linha d'água. */
+export const SEQ_VESSEL_RIG: HeroRig = {
+  horizon: 0.665,
+  focus: { x: 0.36, y: 0.45 },
+  hull: { top: 0.0, bottom: 0.75, l0: 0.06, r0: 0.81, l1: 0.17, r1: 0.8 },
+  superstructure: { x0: 0.06, x1: 0.81, y0: 0.0, y1: 0.67 },
+  skyDrift: 0,
+};
 
 export type AssetId = keyof typeof ASSETS;
 
