@@ -186,13 +186,15 @@ function compile(gl: WebGLRenderingContext, type: number, src: string) {
 type Props = {
   asset: Asset;
   rig: HeroRig;
-  /** rig da versão retrato, se ela existir e tiver outra composição */
+  /** rig para telas estreitas: da versão retrato, ou outro foco do mesmo master */
   rigPortrait?: HeroRig;
   progressRef: MutableRefObject<number>;
   /** sempre "cover", sem o modo retrato estendido (para masters de alta resolução) */
   cover?: boolean;
   /** quando false, o canvas não desenha (algo opaco está cobrindo o hero) */
   activeRef?: MutableRefObject<boolean>;
+  /** false quando o hero só aparece depois de outra imagem (não disputa a banda da primeira) */
+  priority?: boolean;
 };
 
 /** Largura da imagem, em larguras de tela, no modo retrato estendido. */
@@ -201,7 +203,7 @@ function extendK(aspect: number) {
   return 1.6 + (1.15 - 1.6) * t;
 }
 
-export function HeroCanvas({ asset, rig, rigPortrait, progressRef, cover = false, activeRef }: Props) {
+export function HeroCanvas({ asset, rig, rigPortrait, progressRef, cover = false, activeRef, priority = true }: Props) {
   const alt = asset.alt;
   const fallbackSrc = largest(asset).src;
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -267,7 +269,7 @@ export function HeroCanvas({ asset, rig, rigPortrait, progressRef, cover = false
     // textura do tamanho da tela (com folga para o dolly de até 1.3x)
     const need = window.innerWidth * Math.min(window.devicePixelRatio || 1, 2) * 1.3;
     const src = usePortrait ? asset.portrait!.src : pickSource(asset, Math.min(need, 3840)).src;
-    const r = usePortrait && rigPortrait ? rigPortrait : rig;
+    const r = narrow && rigPortrait ? rigPortrait : rig;
     gl.uniform1f(u.horizon, r.horizon);
     gl.uniform2f(u.focus, r.focus.x, r.focus.y);
     gl.uniform4f(u.hull, r.hull.top, r.hull.bottom, r.hull.l0, r.hull.r0);
@@ -374,9 +376,13 @@ export function HeroCanvas({ asset, rig, rigPortrait, progressRef, cover = false
         sizes="100vw"
         alt={mode === "static" ? alt : ""}
         aria-hidden={mode === "static" ? undefined : true}
-        fetchPriority="high"
+        fetchPriority={priority ? "high" : "low"}
         className={cover ? "hero-poster is-cover" : "hero-poster"}
-        style={{ ["--fx" as string]: rig.focus.x, filter: "brightness(0.78) saturate(0.9)" }}
+        style={{
+          ["--fx" as string]: rig.focus.x,
+          ["--fx-narrow" as string]: (rigPortrait ?? rig).focus.x,
+          filter: "brightness(0.78) saturate(0.9)",
+        }}
       />
       <canvas
         ref={canvasRef}

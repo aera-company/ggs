@@ -2,7 +2,7 @@
 
 import { useRef, type ReactNode } from "react";
 import { gsap } from "@/lib/gsap";
-import { SEQ, SEQ_VESSEL_RIG, largest, srcSet, type Asset } from "@/lib/assets";
+import { SEQ, SEQ_VESSEL_RIG, SEQ_VESSEL_RIG_NARROW, largest, srcSet, type Asset } from "@/lib/assets";
 import { HeroCanvas } from "../motion/HeroCanvas";
 import { GlobeNetwork, HUB } from "../motion/GlobeNetwork";
 import { useScrollScene } from "../motion/useScrollScene";
@@ -16,12 +16,16 @@ const LINES = [
   "É ter alguém que responda pelo resultado.",
 ];
 
-// rótulos do canto superior, um por trecho da sequência
+// rótulos do canto superior, um por trecho da sequência; o primeiro já
+// apresenta a plataforma, antes de qualquer rolagem
 const HUD = [
-  ["Global network", "Brazil · Atlantic"],
+  ["Nova plataforma de serviços internacionais", "GAVEA Global Services · conceito"],
   ["Rio de Janeiro · Guanabara Bay", "22°54′S 43°10′W"],
   ["Marine operations", "Port of Rio de Janeiro"],
 ];
+
+// rolagem da abertura em vh (o pin soma uma tela a mais)
+const SCROLL = 540;
 
 // tamanho da placa: a maior dimensão que cobre a tela (ver .seq-plate)
 const PLATE_SIZES = "(max-aspect-ratio: 2752/1536) 179vh, 100vw";
@@ -60,14 +64,22 @@ export function ColdOpen() {
     const globe = q('[data-plate="globe"]');
     const rio = q('[data-plate="rio"]');
     const port = q('[data-plate="port"]');
-    const dock = q('[data-plate="dock"]');
+    const hubTag = q("[data-hub-tag]");
     const flash = q("[data-flash]");
     const net = q("[data-network]");
     const arcs = gsap.utils.toArray<SVGGElement>("[data-arc]", el);
     const hud = gsap.utils.toArray<HTMLElement>("[data-hud-step]", el);
 
-    // trechos da sequência, em progresso do pin (0 a 1)
-    const HERO_AT = 0.72;
+    // Roteiro em vh de rolagem (o pin tem SCROLL + 100vh). Um movimento por imagem,
+    // sempre para a frente: globo → mergulho → Rio → porto → navio.
+    const at = (vh: number) => vh / SCROLL;
+    const len = (vh: number) => vh / SCROLL;
+    const B = {
+      dive: 150, // fim das rotas, começa o mergulho
+      rio: 186, // o clarão cobre a troca globo → Rio
+      port: 290, // corte no movimento
+      hero: 372, // corte para o navio (master WebGL)
+    };
     let live = true;
     const tl = gsap.timeline({
       defaults: { ease: "none" },
@@ -79,11 +91,11 @@ export function ColdOpen() {
         invalidateOnRefresh: true,
         onUpdate: (self) => {
           const p = self.progress;
-          progressRef.current = gsap.utils.clamp(0, 1, (p - HERO_AT) / (1 - HERO_AT));
-          heroActive.current = p > 0.6;
+          progressRef.current = gsap.utils.clamp(0, 1, (p - at(B.hero)) / (1 - at(B.hero)));
+          heroActive.current = p > at(B.hero - 40);
           // pulsos e anel do hub só rodam enquanto o globo está em cena
-          if (p < 0.3 !== live) {
-            live = p < 0.3;
+          if (p < at(B.rio + 10) !== live) {
+            live = p < at(B.rio + 10);
             net.classList.toggle("is-live", live);
           }
         },
@@ -91,7 +103,7 @@ export function ColdOpen() {
     });
     net.classList.add("is-live");
 
-    // ---------- carga da página: primeira frase e rótulos ----------
+    // ---------- carga da página: plataforma, primeira frase e globo ----------
     lines.forEach((line, i) => gsap.set(line, { autoAlpha: i === 0 ? 1 : 0 }));
     gsap.from(lines[0].querySelectorAll(".split-word > span"), {
       yPercent: 110,
@@ -100,90 +112,82 @@ export function ColdOpen() {
       stagger: 0.06,
       delay: 0.5,
     });
-    gsap.from("[data-intro]", { autoAlpha: 0, y: 12, duration: 1.2, ease: "power3.out", delay: 1.1, stagger: 0.12 });
+    gsap.from("[data-intro]", { autoAlpha: 0, y: 12, duration: 1.2, ease: "power3.out", delay: 0.7, stagger: 0.12 });
     gsap.set(hud.slice(1), { autoAlpha: 0 });
-    // o globo surge do escuro e o hub acende sozinho
     gsap.from(globe.querySelector("img"), { opacity: 0, duration: 1.8, ease: "power2.out" });
     gsap.fromTo("[data-hub]", { opacity: 0 }, { opacity: 1, duration: 1.4, ease: "power2.out", delay: 0.9 });
 
-    // ---------- 01 · globo: rotas acendem uma por vez, push-in lento ----------
+    // ---------- 01 · globo: rotas acendem uma por vez a partir do Rio ----------
     const hubOrigin = `${(HUB.x / 2752) * 100}% ${(HUB.y / 1536) * 100}%`;
     gsap.set(globe, { transformOrigin: hubOrigin });
-    tl.to(globe, { scale: 1.1, duration: 0.22 }, 0);
+    tl.to(globe, { scale: 1.1, duration: len(B.dive) }, 0);
     arcs.forEach((arc, i) => {
-      const at = 0.03 + i * 0.016;
+      const t = at(10 + i * 9);
       const strokes = arc.querySelectorAll(".seq-arc, .seq-arc-halo");
-      tl.to(strokes, { strokeDashoffset: 0, duration: 0.036, ease: "power1.inOut" }, at);
-      tl.to(arc.querySelectorAll("[data-pulse]"), { opacity: 0.9, duration: 0.012 }, at + 0.03);
+      tl.to(strokes, { strokeDashoffset: 0, duration: len(22), ease: "power1.inOut" }, t);
+      tl.to(arc.querySelectorAll("[data-pulse]"), { opacity: 0.9, duration: len(8) }, t + len(18));
       const node = arc.querySelector("[data-node]");
-      if (node) tl.from(node, { opacity: 0, duration: 0.012 }, at + 0.032);
+      if (node) tl.from(node, { opacity: 0, duration: len(8) }, t + len(20));
     });
+    // com a rede completa e o texto fora de cena, o Rio é nomeado como centro de coordenação
+    tl.fromTo(hubTag, { autoAlpha: 0, x: -10 }, { autoAlpha: 1, x: 0, duration: len(14), ease: "power2.out" }, at(118));
+    tl.to(hubTag, { autoAlpha: 0, duration: len(10) }, at(B.dive + 2));
 
-    // ---------- passagem: mergulho no Rio, encoberto por um clarão quente ----------
+    // ---------- passagem: mergulho no Rio, o único clarão da abertura ----------
     // leva o hub ao centro da tela enquanto amplia
     const toCenter = (axis: "x" | "y") => () => {
       const r = globe.offsetLeft + (HUB.x / 2752) * globe.offsetWidth;
       const b = globe.offsetTop + (HUB.y / 1536) * globe.offsetHeight;
       return axis === "x" ? window.innerWidth / 2 - r : window.innerHeight / 2 - b;
     };
-    tl.to(globe, { scale: 3.4, x: toCenter("x"), y: toCenter("y"), duration: 0.09, ease: "power2.in" }, 0.22);
-    tl.to(net, { opacity: 0, duration: 0.04 }, 0.235);
-    tl.to(flash, { opacity: 0.9, duration: 0.03, ease: "power1.in" }, 0.255);
-    tl.to(globe, { opacity: 0, duration: 0.02 }, 0.27);
-    tl.to(flash, { opacity: 0, duration: 0.05, ease: "power1.out" }, 0.285);
+    tl.to(globe, { scale: 3.4, x: toCenter("x"), y: toCenter("y"), duration: len(B.rio + 8 - B.dive), ease: "power2.in" }, at(B.dive));
+    tl.to(net, { opacity: 0, duration: len(20) }, at(B.dive + 6));
+    tl.to(flash, { opacity: 0.9, duration: len(16), ease: "power1.in" }, at(B.rio - 14));
+    tl.to(globe, { opacity: 0, duration: len(10) }, at(B.rio - 2));
+    tl.to(flash, { opacity: 0, duration: len(30), ease: "power1.out" }, at(B.rio + 4));
 
-    // ---------- 02 · Rio: chega do alto e desce até o porto ----------
-    gsap.set(rio, { transformOrigin: "52% 82%" });
-    tl.fromTo(rio, { scale: 1.32 }, { scale: 1, duration: 0.15, ease: "power2.out" }, 0.27);
-    tl.to(rio, { scale: 1.9, duration: 0.085, ease: "power1.in" }, 0.415);
-    tl.to(rio, { opacity: 0, duration: 0.022 }, 0.48);
-    // descida: um véu de luz curto esconde a troca de ponto de vista
-    tl.to(flash, { opacity: 0.55, duration: 0.014, ease: "power1.in" }, 0.474);
-    tl.to(flash, { opacity: 0, duration: 0.03, ease: "power1.out" }, 0.488);
+    // ---------- 02 · Rio: um só avanço da baía até o porto ----------
+    gsap.set(rio, { transformOrigin: "52% 84%" });
+    tl.fromTo(rio, { scale: 1.04 }, { scale: 1.62, duration: len(B.port - B.rio), ease: "power1.in" }, at(B.rio));
+    // corte no movimento: o porto entra já avançando
+    tl.set(rio, { opacity: 0 }, at(B.port));
 
-    gsap.set(port, { transformOrigin: "66% 55%" });
-    tl.fromTo(port, { scale: 1.2 }, { scale: 1, duration: 0.08, ease: "power2.out" }, 0.48);
-    tl.to(port, { scale: 1.24, duration: 0.07, ease: "power1.in" }, 0.555);
-
-    // ---------- 03 · porto: corte casado com um clarão curto, depois o master ----------
-    tl.to(flash, { opacity: 0.7, duration: 0.018, ease: "power1.in" }, 0.612);
-    tl.to(port, { opacity: 0, duration: 0.004 }, 0.627);
-    tl.to(flash, { opacity: 0, duration: 0.04, ease: "power1.out" }, 0.632);
-
-    // termina perto do enquadramento do master (proa maior, superestrutura no mesmo lugar)
-    gsap.set(dock, { transformOrigin: "66% 30%" });
-    tl.fromTo(dock, { scale: 1 }, { scale: 1.52, duration: 0.1, ease: "power1.inOut" }, 0.628);
-    tl.to(dock, { opacity: 0, duration: 0.022 }, 0.702);
+    // ---------- 03 · porto: avanço até o navio, corte para o master ----------
+    gsap.set(port, { transformOrigin: "66% 56%" });
+    tl.fromTo(port, { scale: 1.06 }, { scale: 1.3, duration: len(B.hero - B.port), ease: "power1.in" }, at(B.port));
+    tl.set(port, { opacity: 0 }, at(B.hero));
 
     // rótulos do canto acompanham o lugar
-    tl.to(hud[0], { autoAlpha: 0, duration: 0.02 }, 0.27).to(hud[1], { autoAlpha: 1, duration: 0.02 }, 0.29);
-    tl.to(hud[1], { autoAlpha: 0, duration: 0.02 }, 0.49).to(hud[2], { autoAlpha: 1, duration: 0.02 }, 0.51);
+    tl.to(hud[0], { autoAlpha: 0, duration: len(8) }, at(B.rio)).to(hud[1], { autoAlpha: 1, duration: len(8) }, at(B.rio + 10));
+    tl.set(hud[1], { autoAlpha: 0 }, at(B.port)).set(hud[2], { autoAlpha: 1 }, at(B.port));
 
     // ---------- frases ----------
     const words = (line: HTMLElement) => line.querySelectorAll(".split-word > span");
+    // a saída de uma frase leva ~24vh: a próxima só entra depois dela
     const SLOTS = [
-      [0, 0.09],
-      [0.11, 0.2],
-      [0.36, 0.46],
-      [0.53, 0.64],
+      [0, 36],
+      [60, 98],
+      [B.rio + 24, B.port - 30],
+      [B.port + 10, B.hero - 34],
     ];
     lines.forEach((line, i) => {
-      const [inAt, outAt] = SLOTS[i];
+      const [inAt, outAt] = SLOTS[i].map(at);
       if (i > 0) {
-        tl.set(line, { autoAlpha: 1 }, inAt - 0.005);
-        tl.from(words(line), { yPercent: 110, stagger: 0.004, duration: 0.03 }, inAt);
+        tl.set(line, { autoAlpha: 1 }, inAt - len(3));
+        tl.from(words(line), { yPercent: 110, stagger: len(2), duration: len(16) }, inAt);
       }
-      tl.to(words(line), { yPercent: -110, stagger: 0.003, duration: 0.025 }, outAt);
-      tl.set(line, { autoAlpha: 0 }, outAt + 0.045);
+      tl.to(words(line), { yPercent: -110, stagger: len(1.5), duration: len(12) }, outAt);
+      tl.set(line, { autoAlpha: 0 }, outAt + len(24));
     });
 
-    // ---------- revelação da marca sobre o navio ----------
-    tl.fromTo(reveal, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.02 }, 0.76);
-    tl.from(el.querySelectorAll("[data-reveal] .split-word > span"), { yPercent: 110, stagger: 0.012, duration: 0.05 }, 0.76);
-    tl.from("[data-reveal-sub]", { autoAlpha: 0, y: 24, duration: 0.04, stagger: 0.015 }, 0.81);
-    tl.to("[data-scroll-hint]", { autoAlpha: 0, duration: 0.03 }, 0.01);
-    tl.to("[data-hud]", { yPercent: desktop ? 0 : 0, autoAlpha: 0.5, duration: 0.12 }, 0.78);
-    tl.to({}, { duration: 0.06 }, 0.94);
+    // ---------- navio: título com tempo para ser lido ----------
+    const title = B.hero + 18;
+    tl.fromTo(reveal, { autoAlpha: 0 }, { autoAlpha: 1, duration: len(8) }, at(title));
+    tl.from(el.querySelectorAll("[data-reveal] .split-word > span"), { yPercent: 110, stagger: len(5), duration: len(26), ease: "power2.out" }, at(title));
+    tl.from("[data-reveal-sub]", { autoAlpha: 0, y: 24, duration: len(18), stagger: len(6) }, at(title + 26));
+    tl.to("[data-scroll-hint]", { autoAlpha: 0, duration: len(12) }, at(4));
+    tl.to("[data-hud]", { yPercent: desktop ? 0 : 0, autoAlpha: 0.5, duration: len(40) }, at(title));
+    tl.to({}, { duration: 0 }, 1);
 
     return () => net.classList.remove("is-live");
   });
@@ -197,20 +201,32 @@ export function ColdOpen() {
 
   return (
     <section ref={ref} id="request" data-header-theme="dark" className="scene bg-abyss" aria-label="00 · The request">
-      <div className="pin-track" style={{ ["--track" as string]: 760 }}>
+      <div className="pin-track" style={{ ["--track" as string]: SCROLL + 100 }}>
         <div className="pin-stage rm-flow">
           {/* master final: o hero WebGL atual (água viva e dolly) recebe a sequência */}
-          <HeroCanvas asset={SEQ.vessel} rig={SEQ_VESSEL_RIG} progressRef={progressRef} activeRef={heroActive} cover />
+          <HeroCanvas asset={SEQ.vessel} rig={SEQ_VESSEL_RIG} rigPortrait={SEQ_VESSEL_RIG_NARROW} progressRef={progressRef} activeRef={heroActive} priority={false} cover />
 
           {/* sequência mundo → Brasil → porto, por cima do hero. As placas ficam sempre
               pintadas, empilhadas na ordem inversa: cada troca só apaga a de cima
-              (ocultar e mostrar faz o Safari decodificar a imagem de novo no corte). */}
+              (ocultar e mostrar faz o Safari decodificar a imagem de novo no corte).
+              seq-dock saiu na revisão de 23/10: repetia o navio no mesmo ângulo do master. */}
           <div className="rm-hide absolute inset-0 overflow-hidden" aria-hidden="true">
-            <Plate name="dock" asset={SEQ.dock} />
             <Plate name="port" asset={SEQ.port} />
             <Plate name="rio" asset={SEQ.rio} />
             <Plate name="globe" asset={SEQ.globe} eager>
               <GlobeNetwork />
+              {/* o Rio nomeado como centro de coordenação quando a rede se completa */}
+              <div
+                data-hub-tag
+                className="seq-hub-tag t-label"
+                style={{ left: `${(HUB.x / 2752) * 100}%`, top: `${(HUB.y / 1536) * 100}%` }}
+              >
+                <span className="seq-hub-tag-line" />
+                <span>
+                  <span className="block text-paper">Rio de Janeiro</span>
+                  <span className="block text-[#f3c27c]">Coordination hub</span>
+                </span>
+              </div>
             </Plate>
             <div data-flash className="seq-flash absolute inset-0" />
           </div>
@@ -222,7 +238,7 @@ export function ColdOpen() {
           <div data-hud className="wrap rm-static absolute inset-x-0 top-[calc(var(--header-h)+24px)] flex items-start justify-between">
             <div data-intro className="t-label relative text-mist">
               {HUD.map(([a, b], i) => (
-                <div key={a} data-hud-step className={`${i ? "absolute left-0 top-0 rm-hide" : ""} space-y-1 whitespace-nowrap`}>
+                <div key={a} data-hud-step className={`${i ? "absolute left-0 top-0 rm-hide" : ""} w-max max-w-[24ch] space-y-1 sm:max-w-none`}>
                   <p className="text-paper">{a}</p>
                   <p className="text-faint">{b}</p>
                 </div>

@@ -97,3 +97,42 @@ Os testes de vídeo no Kling (clipe 01 e clipe B) mostraram o limite da IA nas p
 - **Copy da abertura (proposta):** "Um navio pode estar em qualquer porto do mundo." · "E precisar de um serviço antes da próxima carga." · "O desafio não é encontrar um fornecedor." · "É ter alguém que responda pelo resultado." Os rótulos do canto acompanham o lugar: Global network, depois Rio de Janeiro · Guanabara Bay, depois Marine operations.
 - **Safari:** as placas ficam sempre pintadas e empilhadas, e cada troca apaga a de cima. Ocultar e mostrar fazia o WebKit decodificar a imagem de novo no corte, com quadros de 50 a 96 ms. Medição numa passada completa de ida e volta: WebKit com 1 a 2 quadros longos em cerca de 760, Chrome com 0.
 - **Movimento reduzido:** o navio fica estático e as frases aparecem empilhadas.
+
+---
+
+# Polish final da abertura (23/10, sem commit)
+
+Objetivo: mais impacto e menos sensação de duração, sem perder a escala. Nenhuma imagem ou vídeo novo. Globo, rede SVG, placas e WebGL preservados.
+
+**Cadência: um movimento por imagem, sempre para a frente.** O roteiro agora é escrito em vh de rolagem (`SCROLL = 540`, pin de 640vh, antes 760vh).
+
+| vh | Trecho |
+|---|---|
+| 0 a 150 | Globo: 10 rotas acendem a partir do Rio, uma a cada 9vh. Em 118 o Rio é nomeado "Coordination hub", com a rede completa e sem texto disputando |
+| 150 a 186 | Mergulho no hub, coberto pelo único clarão da abertura |
+| 186 a 290 | Rio: um só avanço da baía até o porto. O vai e volta de antes (afasta, depois aproxima) saiu |
+| 290 | Corte no movimento para o porto |
+| 290 a 372 | Porto: avanço até o navio |
+| 372 | Corte para o master |
+| 372 a 540 | Navio no hero WebGL. Título em 390, completo em ~430 e em tela até o fim (~110vh de leitura) |
+
+**Transições.** Ficou um clarão, só na entrada da atmosfera, onde ele tem motivo físico. Rio → porto e porto → navio viraram cortes secos no movimento: o avanço continua do outro lado do corte, então não há dupla exposição.
+
+**Imagem retirada.** A `seq-dock` saiu: era o mesmo navio, no mesmo ângulo, logo antes do master, e fazia um zoom redundante com dissolve. O arquivo continua em `public/media` e no registro `SEQ`.
+
+**Plataforma antecipada.** O rótulo do canto já abre com "Nova plataforma de serviços internacionais · GAVEA Global Services · conceito", antes de qualquer rolagem. O título chega cerca de 100vh antes do que na versão anterior.
+
+**Navio com protagonismo.**
+- Corte direto para o master, com dolly contínuo.
+- No celular, recorte próprio (`SEQ_VESSEL_RIG_NARROW`, foco 0,7) na superestrutura iluminada contra o pôr do sol. Antes a proa virava só casco escuro.
+- O `HeroCanvas` passou a aceitar `rigPortrait` em telas estreitas mesmo sem arquivo retrato.
+- O poster do hero carrega com prioridade baixa (`priority={false}`) para não disputar banda com o globo.
+
+**Validação** (Playwright, WebKit 2370 e Chrome do sistema):
+- Rolagem de ida e volta, 7 s e 5 s: WebKit desktop com 1 a 3 quadros longos em ~760, iPhone 390×844 com 1, Chrome com 0.
+- Rolagem reversa: cada ponto volta ao mesmo estado (cortes como `set` no timeline).
+- 4G simulado no iPhone (9 Mbps, 170 ms): globo em 0,7 s, sequência inteira em 2,6 s.
+- Movimento reduzido (desktop e iPhone): navio estático, frases empilhadas, rótulo da plataforma visível, sem erros.
+- Demais seções, portal e BUILD 2030: nenhum arquivo deles foi alterado.
+
+Folha de quadros: `docs/refs/hero-polish-sheet.jpg` (local).

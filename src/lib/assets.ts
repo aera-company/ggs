@@ -105,7 +105,7 @@ export const SEQ = {
   rio: { alt: "Baía de Guanabara ao pôr do sol, com o Pão de Açúcar e o porto. Imagem conceitual.", concept: true, sources: seq("seq-rio"), focal: { x: 0.55, y: 0.6 } },
   port: { alt: "Navio-tanque atracado no porto do Rio, visto do alto. Imagem conceitual.", concept: true, sources: seq("seq-port"), focal: { x: 0.64, y: 0.5 } },
   dock: { alt: "Navio-tanque atracado ao entardecer, visto da água. Imagem conceitual.", concept: true, sources: seq("seq-dock"), focal: { x: 0.45, y: 0.45 } },
-  vessel: { alt: "Proa de um navio-tanque atracado ao entardecer. Imagem conceitual.", concept: true, sources: seq("seq-vessel"), focal: { x: 0.3, y: 0.45 } },
+  vessel: { alt: "Proa de um navio-tanque atracado ao entardecer. Imagem conceitual.", concept: true, sources: seq("seq-vessel"), focal: { x: 0.36, y: 0.45 } },
 } satisfies Record<string, Asset>;
 
 /** Rig do master final da sequência (seq-vessel): navio inteiro acima da linha d'água. */
@@ -116,6 +116,9 @@ export const SEQ_VESSEL_RIG: HeroRig = {
   superstructure: { x0: 0.06, x1: 0.81, y0: 0.0, y1: 0.67 },
   skyDrift: 0,
 };
+
+/** No celular, o recorte vai para a superestrutura iluminada contra o pôr do sol (a proa vira só casco escuro). */
+export const SEQ_VESSEL_RIG_NARROW: HeroRig = { ...SEQ_VESSEL_RIG, focus: { x: 0.7, y: 0.42 } };
 
 export type AssetId = keyof typeof ASSETS;
 
